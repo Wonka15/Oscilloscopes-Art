@@ -221,9 +221,7 @@ for(let i=0;i<3;i++){const b=cylinder(instrument,'Scope push button '+(i+1),[1.0
 for(let i=0;i<2;i++){cylinder(instrument,'BNC connector',[-1.65+i*.35,-1.03,.54],.11,.12,edge);cylinder(instrument,'BNC dark center',[-1.65+i*.35,-1.03,.61],.055,.02,rubber)}
 // Flexible oscilloscope leads: routed over the tabletop, then over its front edge and down outside the table mesh.
 function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,100,.035,10,false),mat(color,.3,.2));mesh.name='Visible oscilloscope cable';root.add(mesh);return mesh}
-// Instrument leads rest on the tabletop, then drape over its front edge and down beside the bench.
-cable([[-1.65,-.045,.70],[-1.72,-.105,1.02],[-1.82,-.105,1.42],[-1.94,-.105,1.82],[-2.02,-.105,2.16],[-2.06,-.12,2.43],[-2.10,-.19,2.52],[-2.12,-.36,2.57],[-2.12,-.62,2.58],[-2.10,-.92,2.58],[-2.06,-1.20,2.58]],'#293a2e');
-cable([[1.70,-.05,.68],[1.78,-.105,1.02],[1.88,-.105,1.42],[2.00,-.105,1.82],[2.08,-.105,2.16],[2.12,-.12,2.43],[2.16,-.19,2.52],[2.18,-.36,2.57],[2.18,-.62,2.58],[2.16,-.92,2.58],[2.12,-1.20,2.58]],'#28332b');
+// Oscilloscope leads intentionally removed at user request.
 
 // Raised instrument shelf and fully simulated power-distribution demo.
 const shelfWood=mat('#493d54',.42,.35),shelfEdge=mat('#857ca4',.3,.62),powerDark=mat('#171a2b',.32,.45),powerFace=mat('#343b58',.3,.42),powerMetal=mat('#c5d6e7',.24,.78),powerBlue=mat('#85caff',.22,.2),powerAmber=mat('#ffd18b',.25,.15);
@@ -290,34 +288,33 @@ const arcLight=new THREE.PointLight(0xb76aff,0,4.8);arcLight.position.set(ladder
 let ladderPowered=false;
 function setLadderPower(on){ladderPowered=!!on;arcLine.visible=ladderPowered;glowLine.visible=ladderPowered;arcLight.intensity=ladderPowered?3.5:0;switchCap.material=ladderPowered?powerBlue:powerAmber;switchCap.position.y=ladderPowered?3.39:3.35;switchCap.userData.pressZ=switchCap.position.z;$('powerToggle').textContent=ladderPowered?'⚡ Jacob’s ladder: ON':'⚡ Jacob’s ladder: OFF';$('powerToggle').setAttribute('aria-pressed',String(ladderPowered));$('powerCaption').textContent=ladderPowered?'SIMULATED PURPLE ARC ACTIVE · NO REAL VOLTAGE':'SIMULATED POWER CIRCUIT · OFF';}
 $('powerToggle').addEventListener('click',()=>setLadderPower(!ladderPowered));
-// A dramatic upward-running purple Jacob's-ladder discharge. The glowing front climbs from the bottom tips to the electrode tops, then restarts.
+// A horizontal purple arc spans the diverging electrodes and travels upward like a classic Jacob's ladder.
 function updateLadder(t){
  if(!ladderPowered)return;
  const p=arcGeo.attributes.position.array,g=glowGeo.attributes.position.array;
- const cycle=(t*.34)%1,front=cycle<.82?cycle/.82:1;
- const visibleSegments=Math.max(2,Math.floor(ARC_SEGMENTS*front));
+ const cycle=(t*.22)%1,front=cycle<.92?cycle/.92:1;
+ const y=3.30+front*1.66;
  for(let i=0;i<=ARC_SEGMENTS;i++){
-  const u=i/ARC_SEGMENTS,active=i<=visibleSegments,progress=u*1.0;
-  const y=3.28+progress*1.72;
+  const u=i/ARC_SEGMENTS;
   const leftX=5.98-(y-3.24)*(.43/1.88),rightX=6.58+(y-3.24)*(.47/1.88);
-  const x=leftX+(rightX-leftX)*(.5+.035*Math.sin(t*31+u*44));
-  const crack=(Math.sin(t*43+i*17)+Math.sin(t*71+i*9))*.018;
-  const jitter=(.018+u*.025)*Math.sin(t*38-i*2.7)+crack;
-  p[i*3]=x+jitter;p[i*3+1]=y+Math.sin(t*28+i*2.1)*.012;p[i*3+2]=-1.405;
-  g[i*3]=x+jitter*.65+Math.sin(t*51+i*3.4)*.022;g[i*3+1]=y+Math.sin(t*33+i*2.8)*.025;g[i*3+2]=-1.412;
-  if(!active){p[i*3+1]=3.27;g[i*3+1]=3.27}
+  const x=leftX+(rightX-leftX)*u;
+  const snap=(Math.sin(t*49+i*7.7)+Math.sin(t*83-i*4.3))*.014;
+  const jag=Math.sin(u*31+t*21)*.022+Math.sin(u*73-t*37)*.012+snap;
+  p[i*3]=x+jag;p[i*3+1]=y+Math.sin(u*39+t*27)*.018;p[i*3+2]=-1.405;
+  g[i*3]=x+jag*1.6+Math.sin(u*61+t*43)*.025;g[i*3+1]=y+Math.sin(u*47+t*33)*.032;g[i*3+2]=-1.412;
  }
- arcGeo.attributes.position.needsUpdate=true;glowGeo.attributes.position.needsUpdate=true;arcGeo.setDrawRange(0,visibleSegments+1);glowGeo.setDrawRange(0,visibleSegments+1);
- arcLight.position.set(6.28,3.55+front*1.45,-1.30);
- arcLight.intensity=ladderPowered?(3.2+5.5*(.5+.5*Math.sin(t*37)))*(0.35+front*.65):0;
- arcMat.opacity=.78+.22*(.5+.5*Math.sin(t*57));arcGlowMat.opacity=.3+.45*(.5+.5*Math.sin(t*29));
+ arcGeo.attributes.position.needsUpdate=true;glowGeo.attributes.position.needsUpdate=true;
+ arcGeo.setDrawRange(0,ARC_SEGMENTS+1);glowGeo.setDrawRange(0,ARC_SEGMENTS+1);
+ arcLight.position.set(6.28,y,-1.30);
+ arcLight.intensity=ladderPowered?(3.8+6.5*(.5+.5*Math.sin(t*37)))*(0.5+front*.5):0;
+ arcMat.opacity=.78+.22*(.5+.5*Math.sin(t*57));arcGlowMat.opacity=.3+.5*(.5+.5*Math.sin(t*29));
 }
 // Physical jack plugs seated in the outlet face; the lead begins at each plug body.
 function outletJack(name,x,y,z,color){const plug=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.14,20),mat(color,.24,.42));plug.name=name;plug.rotation.x=Math.PI/2;plug.position.set(x,y,z);root.add(plug);const collar=new THREE.Mesh(new THREE.CylinderGeometry(.073,.073,.035,20),powerMetal);collar.name=name+' locking collar';collar.rotation.x=Math.PI/2;collar.position.set(x,y,z+.055);root.add(collar)}
 outletJack('Oscilloscope outlet jack',-1.19,3.33,-1.075,'#c9d7f5');
 outletJack('Electron microscope outlet jack',-.71,3.33,-1.075,'#b8dfff');
 // Two independent instrument leads emerge from their own jacks and stay just above the shelf/table surfaces.
-cable([[-1.19,3.33,-.99],[-1.35,3.22,-.93],[-1.55,3.145,-.83],[-1.82,3.145,-.55],[-2.05,3.145,-.15],[-2.05,3.14,.40],[-2.12,2.95,.90],[-2.25,2.10,1.18],[-2.30,1.45,.98],[-2.24,1.23,.70],[-2.08,1.13,.48],[-1.82,1.13,.46]],'#343c56');
+// Oscilloscope leads intentionally removed at user request.
 cable([[-.71,3.33,-.99],[-.48,3.22,-.93],[-.15,3.145,-.83],[.45,3.145,-.55],[1.30,3.145,-.25],[2.10,3.145,-.10],[3.35,3.145,-.10],[4.65,3.145,-.10],[5.65,3.145,-.20],[6.25,3.05,-.42],[6.80,2.65,-.70],[7.12,1.70,-.95],[7.20,.55,-1.12]],'#343c56');
 // Outlet B to converter, then a clean DC lead across the shelf to the ladder base.
 cable([[1.18,3.30,-1.19],[1.40,3.20,-1.12],[1.55,3.145,-1.02],[2.10,3.145,-1.02]],'#d6a45d');
