@@ -221,8 +221,9 @@ for(let i=0;i<3;i++){const b=cylinder(instrument,'Scope push button '+(i+1),[1.0
 for(let i=0;i<2;i++){cylinder(instrument,'BNC connector',[-1.65+i*.35,-1.03,.54],.11,.12,edge);cylinder(instrument,'BNC dark center',[-1.65+i*.35,-1.03,.61],.055,.02,rubber)}
 // Flexible oscilloscope leads: routed over the tabletop, then over its front edge and down outside the table mesh.
 function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,100,.035,10,false),mat(color,.3,.2));mesh.name='Visible oscilloscope cable';root.add(mesh);return mesh}
-cable([[-1.65,-.045,.70],[-1.85,.015,1.05],[-2.05,.025,1.55],[-2.00,.03,2.10],[-2.08,.035,2.36],[-2.12,.04,2.52],[-2.20,.035,2.66],[-2.40,-.04,2.78],[-2.64,-.30,2.83],[-2.82,-.34,2.78],[-2.88,-.22,2.65]],'#293a2e');
-cable([[1.70,-.05,.68],[1.92,-.025,1.12],[2.14,-.02,1.62],[2.10,-.02,2.20],[2.17,-.02,2.42],[2.20,-.02,2.57],[2.28,-.04,2.68],[2.48,-.22,2.79],[2.70,-.39,2.82],[2.88,-.31,2.73],[2.77,-.18,2.63]],'#28332b');
+// Instrument leads rest on the tabletop, then drape over its front edge and down beside the bench.
+cable([[-1.65,-.045,.70],[-1.72,-.105,1.02],[-1.82,-.105,1.42],[-1.94,-.105,1.82],[-2.02,-.105,2.16],[-2.06,-.12,2.43],[-2.10,-.19,2.52],[-2.12,-.36,2.57],[-2.12,-.62,2.58],[-2.10,-.92,2.58],[-2.06,-1.20,2.58]],'#293a2e');
+cable([[1.70,-.05,.68],[1.78,-.105,1.02],[1.88,-.105,1.42],[2.00,-.105,1.82],[2.08,-.105,2.16],[2.12,-.12,2.43],[2.16,-.19,2.52],[2.18,-.36,2.57],[2.18,-.62,2.58],[2.16,-.92,2.58],[2.12,-1.20,2.58]],'#28332b');
 
 // Raised instrument shelf and fully simulated power-distribution demo.
 const shelfWood=mat('#493d54',.42,.35),shelfEdge=mat('#857ca4',.3,.62),powerDark=mat('#171a2b',.32,.45),powerFace=mat('#343b58',.3,.42),powerMetal=mat('#c5d6e7',.24,.78),powerBlue=mat('#85caff',.22,.2),powerAmber=mat('#ffd18b',.25,.15);
@@ -280,17 +281,17 @@ box(root,'Warning label glass cover',[8.03,3.47,-1.143],[.97,.41,.012],mat('#a8d
 panelLabel('⚠ CAUTION',8.03,3.565,-1.128,.075,'#ffd18b');
 panelLabel('SIMULATED ARC',8.03,3.465,-1.128,.057,'#f4f5ff');
 panelLabel('NO REAL VOLTAGE',8.03,3.375,-1.128,.052,'#bfe8ff');
-const arcMat=new THREE.LineBasicMaterial({color:0x8de7ff,transparent:true,opacity:.98});
-const arcGlowMat=new THREE.LineBasicMaterial({color:0x6baeff,transparent:true,opacity:.3});
+const arcMat=new THREE.LineBasicMaterial({color:0xc58bff,transparent:true,opacity:.98});
+const arcGlowMat=new THREE.LineBasicMaterial({color:0x9a4dff,transparent:true,opacity:.38});
 const arcPositions=new Float32Array(17*3),arcGeo=new THREE.BufferGeometry();arcGeo.setAttribute('position',new THREE.BufferAttribute(arcPositions,3));
-const arcLine=new THREE.Line(arcGeo,arcMat);arcLine.name='Straight rising simulated energy path';arcLine.frustumCulled=false;arcLine.visible=false;ladder.add(arcLine);
+const arcLine=new THREE.Line(arcGeo,arcMat);arcLine.name='Horizontal purple simulated electrical discharge';arcLine.frustumCulled=false;arcLine.visible=false;ladder.add(arcLine);
 const glowGeo=new THREE.BufferGeometry();glowGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(17*3),3));const glowLine=new THREE.Line(glowGeo,arcGlowMat);glowLine.frustumCulled=false;glowLine.visible=false;ladder.add(glowLine);
-const arcLight=new THREE.PointLight(0x77dfff,0,4.8);arcLight.position.set(ladderX,4.1,-1.25);scene.add(arcLight);
+const arcLight=new THREE.PointLight(0xb76aff,0,4.8);arcLight.position.set(ladderX,3.58,-1.25);scene.add(arcLight);
 let ladderPowered=false;
-function setLadderPower(on){ladderPowered=!!on;arcLine.visible=ladderPowered;glowLine.visible=ladderPowered;arcLight.intensity=ladderPowered?3.5:0;switchCap.material=ladderPowered?powerBlue:powerAmber;switchCap.position.y=ladderPowered?3.39:3.35;switchCap.userData.pressZ=switchCap.position.z;$('powerToggle').textContent=ladderPowered?'⚡ Jacob’s ladder: ON':'⚡ Jacob’s ladder: OFF';$('powerToggle').setAttribute('aria-pressed',String(ladderPowered));$('powerCaption').textContent=ladderPowered?'SIMULATED ARC ACTIVE · NO REAL VOLTAGE':'SIMULATED POWER CIRCUIT · OFF';}
+function setLadderPower(on){ladderPowered=!!on;arcLine.visible=ladderPowered;glowLine.visible=ladderPowered;arcLight.intensity=ladderPowered?3.5:0;switchCap.material=ladderPowered?powerBlue:powerAmber;switchCap.position.y=ladderPowered?3.39:3.35;switchCap.userData.pressZ=switchCap.position.z;$('powerToggle').textContent=ladderPowered?'⚡ Jacob’s ladder: ON':'⚡ Jacob’s ladder: OFF';$('powerToggle').setAttribute('aria-pressed',String(ladderPowered));$('powerCaption').textContent=ladderPowered?'SIMULATED PURPLE ARC ACTIVE · NO REAL VOLTAGE':'SIMULATED POWER CIRCUIT · OFF';}
 $('powerToggle').addEventListener('click',()=>setLadderPower(!ladderPowered));
-// Arc climbs a near-vertical centerline with restrained lateral flicker, avoiding the electrode meshes.
-function updateLadder(t){if(!ladderPowered)return;const p=arcGeo.attributes.position.array,g=glowGeo.attributes.position.array;const rise=.18+((t*.62)%1)*1.58;for(let i=0;i<17;i++){const u=i/16,y=3.34+rise*u,x=6.28+Math.sin(t*17+i*2.1)*(.008+u*.022);p[i*3]=x;p[i*3+1]=y;p[i*3+2]=-1.405;g[i*3]=x;g[i*3+1]=y;g[i*3+2]=-1.412}arcGeo.attributes.position.needsUpdate=true;glowGeo.attributes.position.needsUpdate=true;arcLight.position.set(6.28,3.45+rise*.55,-1.30);arcLight.intensity=2.0+1.8*(.5+.5*Math.sin(t*22));arcMat.opacity=.58+.4*(.5+.5*Math.sin(t*31));arcGlowMat.opacity=.12+.25*(.5+.5*Math.sin(t*19));}
+// Horizontal, wavering purple discharge bridges the electrode gap rather than climbing vertically.
+function updateLadder(t){if(!ladderPowered)return;const p=arcGeo.attributes.position.array,g=glowGeo.attributes.position.array;const reach=.14+((t*.52)%1)*.36;for(let i=0;i<17;i++){const u=i/16,x=5.98+u*.60,y=3.58+Math.sin(t*20+i*2.4)*(.012+reach*.045);p[i*3]=x;p[i*3+1]=y;p[i*3+2]=-1.405;g[i*3]=x;g[i*3+1]=y+Math.sin(t*14+i*1.7)*.012;g[i*3+2]=-1.412}arcGeo.attributes.position.needsUpdate=true;glowGeo.attributes.position.needsUpdate=true;arcLight.position.set(6.28,3.58,-1.30);arcLight.intensity=2.0+1.8*(.5+.5*Math.sin(t*22));arcMat.opacity=.58+.4*(.5+.5*Math.sin(t*31));arcGlowMat.opacity=.18+.32*(.5+.5*Math.sin(t*19));}
 // Physical jack plugs seated in the outlet face; the lead begins at each plug body.
 function outletJack(name,x,y,z,color){const plug=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.14,20),mat(color,.24,.42));plug.name=name;plug.rotation.x=Math.PI/2;plug.position.set(x,y,z);root.add(plug);const collar=new THREE.Mesh(new THREE.CylinderGeometry(.073,.073,.035,20),powerMetal);collar.name=name+' locking collar';collar.rotation.x=Math.PI/2;collar.position.set(x,y,z+.055);root.add(collar)}
 outletJack('Oscilloscope outlet jack',-1.19,3.33,-1.075,'#c9d7f5');
