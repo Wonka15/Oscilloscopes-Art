@@ -43,7 +43,7 @@
 </section></aside></div>
 
 <section class="sem-lab" id="virtualSemLab">
-  <div class="sem-lab-head"><div><div class="eyebrow">SPECIMEN BAY · LIVE SCAN SIMULATOR</div><h2>Virtual SEM / Apple Microstructure</h2><div class="note">Load an apple sample, change magnification, and watch the scan pass across real scientific micrograph imagery.</div></div><div class="tag">SIMULATED DETECTOR</div></div>
+  <div class="sem-lab-head"><div><div class="eyebrow">SPECIMEN BAY · LIVE SCAN SIMULATOR</div><h2>Virtual SEM / Apple Microstructure</h2><div class="note">Explore apple cuticle microstructure with a moving scan, adjustable focus, detector response, and magnification. Published imagery loads when available; a procedural fallback keeps the screen active offline.</div></div><div class="tag">SIMULATED DETECTOR</div></div>
   <div class="sem-grid">
     <div class="sem-screen" id="semScreen">
       <canvas id="semCanvas" width="1000" height="700" aria-label="Animated scanning electron microscope view of apple tissue"></canvas>
@@ -71,7 +71,7 @@
         <div class="sem-stat"><span>FRAME RATE</span><b id="semFPS">30 fps</b></div>
       </div>
       <label class="sem-toggle"><input id="semGrain" type="checkbox" checked> Add detector grain / scan texture</label>
-      <p class="sem-disclaimer">Scientific visualization, not a physical measurement. The moving beam and detector values are simulated. The image source is a published apple-cuticle SEM study; changing controls adjusts the view and scan effect, not the original microscope data.</p>
+      <p class="sem-disclaimer">Scientific visualization, not a physical measurement. The moving beam and detector values are simulated. Published apple-cuticle imagery is used when it loads; otherwise the viewer generates a procedural microstructure. Controls change the visualization, not original microscope data.</p>
       <p class="sem-disclaimer">Image source: <a class="sem-source" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7767305/" target="_blank" rel="noreferrer">Arrieta-Baez et al., Molecules (2020), Figure 5</a>.</p>
     </div>
   </div>
@@ -282,38 +282,66 @@ semImage.onload=()=>{semState.loaded=true;drawSem()};
 semImage.onerror=()=>{semState.loaded=false;drawSem()};
 function semNoise(x,y){return (Math.sin(x*12.9898+y*78.233+semState.frame*3.17)*43758.5453)%1}
 function drawSem(){
- const w=semCanvas.width,h=semCanvas.height,ctx=semCtx;ctx.save();ctx.clearRect(0,0,w,h);
+ const w=semCanvas.width,h=semCanvas.height,ctx=semCtx;
+ ctx.save();ctx.clearRect(0,0,w,h);
  const magFactor=[1,1.35,2.0,3.2,5.0][semState.mag-1];
  if(semState.loaded){
    const iw=semImage.naturalWidth,ih=semImage.naturalHeight;
    const cropW=iw/magFactor,cropH=ih/magFactor;
-   let sx=(iw-cropW)*(.18+.12*Math.sin(semState.phase*.17)+(semState.sample==='inner'?.48:semState.sample==='cross'?.75:0));
-   let sy=(ih-cropH)*(.25+.18*Math.cos(semState.phase*.13)+(semState.sample==='cross'?.45:0));
+   const region=semState.sample==='inner'?.48:semState.sample==='cross'?.75:.18;
+   let sx=(iw-cropW)*(region+.12*Math.sin(semState.phase*.055));
+   let sy=(ih-cropH)*(.25+.18*Math.cos(semState.phase*.045)+(semState.sample==='cross'?.35:0));
    sx=Math.max(0,Math.min(iw-cropW,sx));sy=Math.max(0,Math.min(ih-cropH,sy));
-   ctx.filter='grayscale(1) contrast('+ (semState.contrast*1.6)+'%) brightness('+ (semState.bright*1.45)+'%)'+(semState.focus<100?' blur('+((100-semState.focus)/24)+'px)':'');
+   ctx.filter='grayscale(1) contrast('+(semState.contrast*1.6)+'%) brightness('+(semState.bright*1.45)+'%)'+(semState.focus<100?' blur('+((100-semState.focus)/24)+'px)':'');
    ctx.drawImage(semImage,sx,sy,cropW,cropH,0,0,w,h);ctx.filter='none';
-   if(semState.detector==='bse'){ctx.fillStyle='rgba(195,205,184,.17)';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='screen';ctx.fillStyle='#c4d0c0';ctx.globalAlpha=.08;ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
-   if(semState.detector==='color'){const grad=ctx.createLinearGradient(0,0,w,h);grad.addColorStop(0,'rgba(100,255,140,.22)');grad.addColorStop(.5,'rgba(80,170,255,.15)');grad.addColorStop(1,'rgba(255,180,70,.25)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h)}
  }else{
-   // Reliable procedural fallback: a grayscale apple-cuticle micrograph texture, so the viewer never stays blank if the remote paper image is blocked.
-   ctx.fillStyle='#151715';ctx.fillRect(0,0,w,h);const cellW=42,cellH=34;
-   for(let row=-1;row<h/cellH+1;row++)for(let col=-1;col<w/cellW+1;col++){
-     const x=col*cellW+(row%2)*21+(Math.sin(col*4.3+row*2.1)*7),y=row*cellH+Math.cos(col*1.7-row)*5;
-     const shade=62+Math.floor((Math.sin(col*7.2+row*4.1)+1)*45);ctx.fillStyle='rgb('+shade+','+shade+','+shade+')';ctx.strokeStyle='rgb('+(shade+45)+','+(shade+45)+','+(shade+45)+')';ctx.lineWidth=1.4;
-     ctx.beginPath();ctx.moveTo(x-18,y-10);ctx.lineTo(x-5,y-17);ctx.lineTo(x+16,y-12);ctx.lineTo(x+21,y+2);ctx.lineTo(x+8,y+16);ctx.lineTo(x-12,y+14);ctx.closePath();ctx.fill();ctx.stroke();
-     ctx.fillStyle='#252725';ctx.beginPath();ctx.ellipse(x+3,y+1,4+(col%3),3+(row%3),.4,0,Math.PI*2);ctx.fill();
+   // Procedural apple-cuticle fallback: deterministic micro-cracks, wax platelets, or tissue cells.
+   ctx.fillStyle='#101310';ctx.fillRect(0,0,w,h);
+   const zoom=magFactor,cellW=(semState.sample==='cross'?78:46)*zoom,cellH=(semState.sample==='cross'?62:35)*zoom;
+   for(let row=-2;row<h/cellH+2;row++)for(let col=-2;col<w/cellW+2;col++){
+     const seed=Math.sin(col*12.9898+row*78.233)*43758.5453;
+     const x=col*cellW+(row%2)*cellW*.5+(Math.sin(col*4.3+row*2.1)*cellW*.12);
+     const y=row*cellH+Math.cos(col*1.7-row)*cellH*.12;
+     const shade=semState.sample==='cross'?Math.floor(82+((Math.sin(seed)+1)*40)):Math.floor(48+((Math.sin(seed)+1)*55));
+     ctx.fillStyle='rgb('+shade+','+shade+','+shade+')';
+     ctx.strokeStyle='rgb('+Math.min(255,shade+65)+','+Math.min(255,shade+65)+','+Math.min(255,shade+65)+')';ctx.lineWidth=Math.max(1,1.5*zoom);
+     if(semState.sample==='cross'){
+       ctx.beginPath();ctx.ellipse(x,y,cellW*.43,cellH*.43,Math.sin(seed)*.25,0,Math.PI*2);ctx.fill();ctx.stroke();
+       ctx.strokeStyle='rgba(15,17,15,.85)';ctx.lineWidth=Math.max(2,4*zoom);ctx.beginPath();ctx.ellipse(x,y,cellW*.31,cellH*.29,0,0,Math.PI*2);ctx.stroke();
+     }else if(semState.sample==='inner'){
+       ctx.beginPath();ctx.moveTo(x-cellW*.48,y-cellH*.12);ctx.bezierCurveTo(x-cellW*.2,y-cellH*.55,x+cellW*.2,y-cellH*.45,x+cellW*.49,y-cellH*.05);ctx.bezierCurveTo(x+cellW*.15,y+cellH*.5,x-cellW*.15,y+cellH*.5,x-cellW*.48,y-cellH*.12);ctx.fill();ctx.stroke();
+       for(let k=0;k<4;k++){const px=x+(Math.sin(seed+k*8)*cellW*.32),py=y+(Math.cos(seed+k*3)*cellH*.24);ctx.fillStyle='#d3d5cf';ctx.beginPath();ctx.moveTo(px,py);ctx.lineTo(px+5*zoom,py-3*zoom);ctx.lineTo(px+8*zoom,py+2*zoom);ctx.closePath();ctx.fill()}
+     }else{
+       // Irregular epidermal plates and branching hairline cuticle cracks.
+       const pts=[];for(let k=0;k<7;k++){const a=-Math.PI/2+k*Math.PI*2/7;const rr=.34+Math.abs(Math.sin(seed+k*5.7))*.15;pts.push([x+Math.cos(a)*cellW*rr,y+Math.sin(a)*cellH*rr])}
+       ctx.beginPath();ctx.moveTo(pts[0][0],pts[0][1]);for(let k=1;k<pts.length;k++)ctx.lineTo(pts[k][0],pts[k][1]);ctx.closePath();ctx.fill();ctx.stroke();
+       ctx.strokeStyle='#151715';ctx.lineWidth=Math.max(1,2.2*zoom);ctx.beginPath();ctx.moveTo(x,y);ctx.lineTo(x+Math.sin(seed)*cellW*.34,y+Math.cos(seed*2)*cellH*.4);ctx.moveTo(x,y);ctx.lineTo(x+Math.cos(seed*3)*cellW*.32,y-Math.sin(seed)*cellH*.35);ctx.stroke();
+       for(let k=0;k<3;k++){const px=x+Math.sin(seed+k*9)*cellW*.24,py=y+Math.cos(seed+k*4)*cellH*.2;ctx.fillStyle='#c5c8c1';ctx.beginPath();ctx.ellipse(px,py,Math.max(2,3*zoom),Math.max(1.5,2*zoom),seed,0,Math.PI*2);ctx.fill()}
+     }
    }
-   const vignette=ctx.createRadialGradient(w/2,h/2,60,w/2,h/2,w*.7);vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.48)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
-   ctx.fillStyle='#caffaa';ctx.font='bold 20px monospace';ctx.fillText('APPLE CUTICLE · SIMULATED SEM',24,34);
+   ctx.filter='contrast('+(semState.contrast*1.55)+'%) brightness('+(semState.bright*1.35)+'%)'+(semState.focus<100?' blur('+((100-semState.focus)/26)+'px)':'');
+   ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.filter='none';ctx.globalCompositeOperation='destination-in';ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';
  }
- if(semState.grain){ctx.globalAlpha=.10;for(let i=0;i<950;i++){const x=(i*137+semState.frame*17)%w,y=(i*71+semState.frame*11)%h;const n=semNoise(x,y);ctx.fillStyle=n>.0?'#f0f5e9':'#030503';ctx.fillRect(x,y,1+(i%2),1+(i%2))}ctx.globalAlpha=1}
- // CRT scan texture and border
- ctx.fillStyle='rgba(0,0,0,.16)';for(let y=2;y<h;y+=5)ctx.fillRect(0,y,w,1);
- ctx.strokeStyle='rgba(186,255,123,.13)';ctx.lineWidth=2;ctx.strokeRect(2,2,w-4,h-4);
- // Mirror the current scan into the microscope's physical console display.
+ // Detector response applies to both the published micrograph and the fallback texture.
+ if(semState.detector==='bse'){
+   ctx.fillStyle='rgba(210,220,205,.22)';ctx.fillRect(0,0,w,h);
+   ctx.globalCompositeOperation='screen';ctx.globalAlpha=.12;ctx.fillStyle='#e2e8dc';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1;
+ }else if(semState.detector==='color'){
+   const grad=ctx.createLinearGradient(0,0,w,h);grad.addColorStop(0,'rgba(100,255,140,.30)');grad.addColorStop(.5,'rgba(80,170,255,.22)');grad.addColorStop(1,'rgba(255,180,70,.32)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h);
+ }
+ if(semState.grain){
+   ctx.globalAlpha=.12;
+   for(let i=0;i<1250;i++){const x=(i*137+semState.frame*17)%w,y=(i*71+semState.frame*11)%h,n=semNoise(x,y);ctx.fillStyle=n>0?'#f0f5e9':'#030503';ctx.fillRect(x,y,1+(i%2),1+(i%2))}
+   ctx.globalAlpha=1;
+ }
+ // Scan texture and phosphor border.
+ ctx.fillStyle='rgba(0,0,0,.17)';for(let y=2;y<h;y+=5)ctx.fillRect(0,y,w,1);
+ ctx.strokeStyle='rgba(186,255,123,.18)';ctx.lineWidth=2;ctx.strokeRect(2,2,w-4,h-4);
+ // Tiny status imprint in the actual microscope console screen.
  semDisplayCtx.clearRect(0,0,semDisplayCanvas.width,semDisplayCanvas.height);semDisplayCtx.drawImage(semCanvas,0,0,semDisplayCanvas.width,semDisplayCanvas.height);semDisplayTexture.needsUpdate=true;
  ctx.restore();
- const mag=semMagnifications[semState.mag-1];$('semMagnificationReadout').textContent='×'+mag.toLocaleString('en-US');$('semMagVal').textContent='×'+mag.toLocaleString('en-US');
+ const mag=semMagnifications[semState.mag-1];
+ $('semMagnificationReadout').textContent='×'+mag.toLocaleString('en-US');$('semMagVal').textContent='×'+mag.toLocaleString('en-US');
  $('semScaleReadout').textContent=semState.mag<3?'10 μm':semState.mag<5?'2 μm':'500 nm';
  $('semImageLabel').textContent=semState.sample==='inner'?'APPLE CUTICLE · INNER FACE':semState.sample==='cross'?'APPLE TISSUE · SECTION VIEW':'APPLE CUTICLE · OUTER FACE';
  $('semSignal').textContent=(34+semState.voltage*4.7+semState.contrast*.19+Math.abs(Math.sin(semState.phase))*8).toFixed(1)+' a.u.';
@@ -326,7 +354,7 @@ function drawSem(){
 $('semGrain').addEventListener('change',e=>{semState.grain=e.target.checked;drawSem()});
 $('semPause').addEventListener('click',()=>{semState.paused=!semState.paused;$('semPause').textContent=semState.paused?'Resume scan':'Pause scan';drawSem()});
 $('semRescan').addEventListener('click',()=>{semState.frame++;semState.phase+=27;drawSem()});
-let semLast=0;function semAnimate(now){requestAnimationFrame(semAnimate);if(now-semLast>90){semLast=now;if(!semState.paused){semState.phase+=semState.speed; if(semState.phase>=100)semState.frame++;const line=$('semScanline');line.style.transform='translateY('+((semState.phase%100)/100* Math.max(0,$('semScreen').clientHeight-4))+'px)';drawSem()}}}requestAnimationFrame(semAnimate);
+let semLast=0,semLastFrameBucket=0;function semAnimate(now){requestAnimationFrame(semAnimate);if(now-semLast>60){semLast=now;if(!semState.paused){semState.phase+=semState.speed;const bucket=Math.floor(semState.phase/100);if(bucket>semLastFrameBucket){semState.frame+=bucket-semLastFrameBucket;semLastFrameBucket=bucket}const line=$('semScanline');line.style.transform='translateY('+((semState.phase%100)/100*Math.max(0,$('semScreen').clientHeight-4))+'px)';drawSem()}}}requestAnimationFrame(semAnimate);
 drawSem();
 
 </script></body></html>
