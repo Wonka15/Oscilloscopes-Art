@@ -12,7 +12,7 @@
 </head>
 <body><div class="app">
 <header class="head"><div><div class="eyebrow">WONKA15 · INTERACTIVE OBJECT LAB</div><h1>OSCILLOSCOPES ART / 3D BENCH</h1></div><div class="tag">REAL-TIME MESH · AR EXPORT</div></header>
-<div class="layout"><section class="stage" id="stage"><div class="badge">V-03 VECTOR DISPLAY · 3D MODEL</div><div class="stage-hint">DRAG TO ORBIT · SCROLL TO ZOOM · DRAG A KNOB TO TURN IT</div></section>
+<div class="layout"><section class="stage" id="stage"><div class="badge">V-03 OSCILLOSCOPE + JEOL JSM-5200 SEM · 3D LAB</div><div class="stage-hint">DRAG TO ORBIT · SCROLL TO ZOOM · DRAG A KNOB TO TURN IT</div></section>
 <aside class="panel">
 <section class="card"><div class="title"><b>Signal controls</b><span>01</span></div>
 <div class="control"><div class="row"><label for="freq">Frequency</label><output class="val" id="freqVal">60 Hz</output></div><input class="range" id="freq" type="range" min="5" max="120" value="60" step=".5"></div>
@@ -50,9 +50,9 @@ import {USDZExporter} from 'three/addons/exporters/USDZExporter.js';
 const $=id=>document.getElementById(id), stage=$('stage');
 const state={freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',mode:'lissajous',paused:false};
 const scene=new THREE.Scene();scene.background=new THREE.Color('#141b15');scene.fog=new THREE.Fog('#141b15',10,24);
-const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(5.6,4.3,7.6);
+const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(6.9,5.0,10.2);
 const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;stage.prepend(renderer.domElement);
-const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(0,.9,0);orbit.enableDamping=true;orbit.maxDistance=14;orbit.minDistance=3.5;
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(.75,.85,0);orbit.enableDamping=true;orbit.maxDistance=17;orbit.minDistance=3.5;
 scene.add(new THREE.HemisphereLight(0xdcebd8,0x25291f,2.1));
 const key=new THREE.DirectionalLight(0xffe3b4,3.1);key.position.set(3,7,5);scene.add(key);
 const rim=new THREE.PointLight(0x86ff9b,18,9);rim.position.set(-3,3,2);scene.add(rim);
@@ -67,6 +67,49 @@ box(root,'Workbench top',[0,-.23,0],[8.8,.22,5.1],wood);
 box(root,'Workbench front edge',[0,-.35,2.48],[8.8,.08,.12],wood2);
 for(const x of [-3.7,3.7])for(const z of [-1.9,1.9]){const leg=box(root,'Workbench leg',[x,-1.08,z],[.18,1.45,.18],dark);leg.rotation.z=x<0?-.015:.015}
 for(let i=0;i<16;i++){const line=box(root,'Wood grain',[-3.8+i*.5,-.113,0],[.012,.004,4.7],wood2);line.material=wood2}
+
+ // Vintage JEOL JSM-5200 scanning electron microscope: custom 3D exterior mesh.
+ // This is a visual reconstruction, not an engineering-accurate CAD model.
+ const sem=new THREE.Group();sem.name='JEOL JSM-5200 Scanning Electron Microscope';sem.position.set(3.05,-.115,-.42);root.add(sem);
+ const semCream=mat('#c8c9b9',.42,.3),semLight=mat('#d9dacc',.38,.28),semShadow=mat('#747b73',.38,.58),semBlack=mat('#171c19',.5,.3),semSteel=mat('#aeb6b0',.28,.68),semBlue=mat('#243b45',.28,.45),semAmber=mat('#d5a34a',.35,.32);
+ box(sem,'JSM-5200 lower plinth',[0,.16,0],[1.75,.30,1.48],semShadow);
+ box(sem,'JSM-5200 base cabinet',[0,.53,0],[1.55,.52,1.30],semCream);
+ box(sem,'Front lower access panel',[0,.50,.665],[1.22,.34,.035],semLight);
+ box(sem,'Lower panel seam',[0,.31,.69],[1.25,.018,.018],semShadow);
+ box(sem,'Electron column enclosure',[0,1.30,-.19],[.92,1.22,.98],semLight);
+ box(sem,'Column top cap',[0,1.94,-.19],[1.02,.16,1.08],semCream);
+ box(sem,'Top gun cover',[0,2.10,-.19],[.66,.22,.72],semCream);
+ box(sem,'Column side service panel',[.474,1.35,-.22],[.025,.78,.68],semShadow);
+ box(sem,'Column front label plate',[0,1.76,.316],[.55,.15,.025],semShadow);
+ textLabel(sem,'JEOL',[-.18,1.75,.335],.082,'#edf0e8');
+ textLabel(sem,'JSM-5200',[-.30,1.61,.316],.063,'#35443a');
+ // Vacuum chamber door, metallic rim and viewing port.
+ cylinder(sem,'Vacuum specimen chamber',[0,.99,.59],.43,.24,semShadow,48);
+ cylinder(sem,'Specimen chamber rim',[0,.99,.725],.355,.045,semSteel,48);
+ cylinder(sem,'Specimen chamber door',[0,.99,.755],.30,.035,semCream,48);
+ cylinder(sem,'Chamber central viewport',[0,.99,.779],.105,.012,semBlack,40);
+ cylinder(sem,'Viewport inner glass',[0,.99,.788],.067,.012,semBlue,40);
+ box(sem,'Chamber latch left',[-.34,.99,.79],[.055,.16,.055],semSteel);
+ box(sem,'Chamber latch right',[.34,.99,.79],[.055,.16,.055],semSteel);
+ box(sem,'Specimen stage neck',[0,.73,.76],[.20,.10,.20],semSteel);
+ box(sem,'Specimen exchange tray',[0,.67,.88],[.48,.045,.34],semShadow);
+ box(sem,'Sample holder',[0,.715,.91],[.16,.035,.12],semSteel);
+ // Side operator console with monochrome screen and physical controls.
+ const semConsole=new THREE.Group();semConsole.name='JSM-5200 operator console';semConsole.position.set(.48,.83,.34);semConsole.rotation.y=-.12;sem.add(semConsole);
+ box(semConsole,'Console body',[.20,.08,.05],[.48,.70,.38],semCream);
+ box(semConsole,'Console dark display bezel',[.20,.25,.255],[.36,.24,.035],semBlack);
+ box(semConsole,'Console monochrome screen',[.20,.25,.277],[.29,.17,.012],mat('#293d34',.2,.2));
+ textLabel(semConsole,'SEM',[.09,.24,.29],.047,'#b9f49a');
+ for(let i=0;i<3;i++){
+   cylinder(semConsole,'Console control knob '+(i+1),[.10+i*.105,-.10,.265],.032,.04,semShadow,24);
+   cylinder(semConsole,'Console knob cap '+(i+1),[.10+i*.105,-.10,.289],.020,.012,semSteel,24);
+ }
+ for(let i=0;i<4;i++)box(semConsole,'Console function key '+(i+1),[.09+i*.075,-.23,.26],[.045,.035,.02],i===0?semAmber:semShadow);
+ box(sem,'Rear vacuum module',[0,1.10,-.72],[.66,.48,.25],semShadow);
+ box(sem,'Rear vent panel',[0,1.12,-.855],[.48,.30,.025],semBlack);
+ for(let i=0;i<7;i++)box(sem,'Rear vent '+(i+1),[-.19+i*.063,1.12,-.872],[.018,.22,.012],semSteel);
+ for(const x of [-.62,.62])for(const z of [-.48,.48])cylinder(sem,'Rubber isolator foot',[x,.035,z],.105,.10,rubber,24);
+ textLabel(sem,'SCANNING ELECTRON',[-.60,.24,.755],.042,'#e6e9e0');
 // instrument case
 const instrument=new THREE.Group();instrument.position.set(0,.98,.05);root.add(instrument);
 box(instrument,'Steel instrument chassis',[0,0,0],[4.45,2.55,.82],dark);
@@ -148,7 +191,7 @@ function updateUI(){for(const k of ['freq','amp','phase','glow'])$(k+'Val').text
 $('mode').addEventListener('change',e=>{state.mode=e.target.value;updateTrace()});
 document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.color=b.dataset.color;$('colorLabel').textContent=b.dataset.label;updateTrace()}));
 $('pause').addEventListener('click',()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'Resume animation':'Pause animation'});
-$('reset').addEventListener('click',()=>{camera.position.set(5.6,4.3,7.6);orbit.target.set(0,.9,0);orbit.update()});
+$('reset').addEventListener('click',()=>{camera.position.set(6.9,5.0,10.2);orbit.target.set(.75,.85,0);orbit.update()});
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let activeKnob=null,lastY=0;
 renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(knobs,true);if(hits.length){let o=hits[0].object;while(o&&!knobs.includes(o))o=o.parent;if(o){activeKnob=o;lastY=e.clientY;orbit.enabled=false;renderer.domElement.setPointerCapture(e.pointerId)}}});
 renderer.domElement.addEventListener('pointermove',e=>{if(!activeKnob)return;const delta=(lastY-e.clientY);lastY=e.clientY;const c=activeKnob.userData.control;const el=$(c);const step=c==='freq'?.5:c==='amp'?.01:1;el.value=String(Math.max(Number(el.min),Math.min(Number(el.max),Number(el.value)+delta*step*2)));state[c]=Number(el.value);updateUI()});
