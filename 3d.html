@@ -101,7 +101,7 @@ const dark=mat('#18211b',.35,.62), edge=mat('#526052',.32,.7), rubber=mat('#1014
 const root=new THREE.Group();scene.add(root);
 function box(parent,name,pos,size,material,bevel=0){const g=new THREE.BoxGeometry(...size);const m=new THREE.Mesh(g,material);m.name=name;m.position.set(...pos);parent.add(m);return m}
 function cylinder(parent,name,pos,radius,depth,material,segments=40){const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,depth,segments),material);m.name=name;m.rotation.x=Math.PI/2;m.position.set(...pos);parent.add(m);return m}
-function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');x.clearRect(0,0,512,128);x.font='bold 42px monospace';x.fillStyle=color;x.fillText(text,10,78);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(size*4,size),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide}));m.position.set(...pos);parent.add(m);return m}
+function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){const c=document.createElement('canvas');c.width=512;c.height=128;const x=c.getContext('2d');x.clearRect(0,0,512,128);x.font='bold 42px monospace';x.textAlign='center';x.textBaseline='middle';x.fillStyle=color;x.fillText(text,256,64,490);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const m=new THREE.Mesh(new THREE.PlaneGeometry(size*4,size),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false}));m.position.set(...pos);parent.add(m);return m}
 // Workbench and metal legs
 box(root,'Workbench top',[0,-.23,0],[8.8,.22,5.1],wood);
 box(root,'Workbench front edge',[0,-.35,2.48],[8.8,.08,.12],wood2);
@@ -163,7 +163,7 @@ box(instrument,'Screen bezel',[-.68,.22,.495],[2.7,1.82,.09],rubber);
 box(instrument,'Screen glass',[-.68,.22,.548],[2.52,1.64,.025],mat('#07140c',.2,.12));
 box(instrument,'Brand plate',[1.48,.91,.49],[1.15,.18,.045],dark);
 textLabel(instrument,'V-03 VECTOR',[.96,.89,.526],.075,'#baff7b');
-textLabel(instrument,'OSCILLOSCOPE',[1.05,.70,.526],.047,'#d4ddcf');
+textLabel(instrument,'OSCILLOSCOPE',[1.04,.68,.526],.105,'#d4ddcf');
 textLabel(instrument,'FREQ',[1.03,.37,.526],.055,'#baff7b');
 textLabel(instrument,'AMP',[1.03,-.15,.526],.055,'#baff7b');
 textLabel(instrument,'PHASE',[1.03,-.67,.526],.055,'#baff7b');
@@ -182,10 +182,10 @@ makeKnob('Frequency knob',1.52,.22,.24,'freq');makeKnob('Amplitude knob',1.52,-.
 // Switches and cable jacks
 for(let i=0;i<3;i++){cylinder(instrument,'Button',[1.02-i*.34,-1.02,.55],.065,.08,mat(i===0?'#d2a45d':'#39463b',.25,.4),24)}
 for(let i=0;i<2;i++){cylinder(instrument,'BNC connector',[-1.65+i*.35,-1.03,.54],.11,.12,edge);cylinder(instrument,'BNC dark center',[-1.65+i*.35,-1.03,.61],.055,.02,rubber)}
-// A flexible cable represented by a real tube mesh
-function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,80,.035,8,false),mat(color,.35,.25));root.add(mesh);return mesh}
-cable([[-1.65,-.06,.7],[-1.8,-.1,1],[-2.2,-.15,1.1],[-2.4,-.16,.4],[-2.1,-.15,.0],[-1.5,-.15,.2]],'#293a2e');
-cable([[1.7,-.05,.68],[2,-.15,.95],[2.3,-.15,.65],[2.4,-.15,.2],[2,-.15,-.3],[1.5,-.15,-.25]],'#28332b');
+// Flexible oscilloscope leads: routed over the tabletop, then over its front edge and down outside the table mesh.
+function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,100,.035,10,false),mat(color,.3,.2));mesh.name='Visible oscilloscope cable';root.add(mesh);return mesh}
+cable([[-1.65,-.05,.70],[-1.85,-.025,1.05],[-2.05,-.02,1.55],[-2.00,-.02,2.20],[-2.08,-.06,2.53],[-2.22,-.24,2.70],[-2.48,-.43,2.76],[-2.72,-.46,2.70],[-2.82,-.30,2.58],[-2.68,-.18,2.50]],'#293a2e');
+cable([[1.70,-.05,.68],[1.92,-.025,1.12],[2.14,-.02,1.62],[2.10,-.02,2.20],[2.17,-.06,2.53],[2.33,-.24,2.70],[2.60,-.43,2.76],[2.82,-.46,2.68],[2.90,-.31,2.57],[2.76,-.18,2.50]],'#28332b');
 // Small bench props: solder spool and screwdriver
 const spool=cylinder(root,'Solder spool',[-3,-.08,-1.4],.32,.23,edge,48);spool.rotation.x=Math.PI/2;spool.rotation.z=.3;
 cylinder(root,'Spool core',[-3,-.08,-1.4],.13,.25,rubber,32).rotation.x=Math.PI/2;
@@ -237,12 +237,12 @@ $('mode').addEventListener('change',e=>{state.mode=e.target.value;updateTrace()}
 document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.color=b.dataset.color;$('colorLabel').textContent=b.dataset.label;updateTrace()}));
 $('pause').addEventListener('click',()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'Resume animation':'Pause animation'});
 $('reset').addEventListener('click',()=>{camera.position.set(8.8,5.8,13.6);orbit.target.set(2.7,.85,0);orbit.update()});
-const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let activeKnob=null,lastY=0;
-renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(knobs,true);if(hits.length){let o=hits[0].object;while(o&&!knobs.includes(o))o=o.parent;if(o){activeKnob=o;lastY=e.clientY;orbit.enabled=false;renderer.domElement.setPointerCapture(e.pointerId)}}});
-renderer.domElement.addEventListener('pointermove',e=>{if(!activeKnob)return;const delta=(lastY-e.clientY);lastY=e.clientY;const c=activeKnob.userData.control;const el=$(c);const step=c==='freq'?.5:c==='amp'?.01:1;el.value=String(Math.max(Number(el.min),Math.min(Number(el.max),Number(el.value)+delta*step*2)));state[c]=Number(el.value);updateUI()});
-function endDrag(){activeKnob=null;orbit.enabled=true}renderer.domElement.addEventListener('pointerup',endDrag);renderer.domElement.addEventListener('pointercancel',endDrag);
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let activeKnob=null,lastX=0,knobSettling=false;const knobTargets={freq:state.freq,amp:state.amp,phase:state.phase};
+renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(knobs,true);if(hits.length){let o=hits[0].object;while(o&&!knobs.includes(o))o=o.parent;if(o){activeKnob=o;knobSettling=false;lastX=e.clientX;const c=o.userData.control;knobTargets[c]=state[c];orbit.enabled=false;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='ew-resize'}}});
+renderer.domElement.addEventListener('pointermove',e=>{if(!activeKnob)return;const dx=e.clientX-lastX;lastX=e.clientX;const c=activeKnob.userData.control;const el=$(c);const sensitivity=c==='freq'?.22:c==='amp'?.0022:.55;const target=knobTargets[c]+dx*sensitivity;knobTargets[c]=Math.max(Number(el.min),Math.min(Number(el.max),target));});
+function endDrag(){if(activeKnob){knobSettling=true;activeKnob=null}orbit.enabled=true;renderer.domElement.style.cursor=''}renderer.domElement.addEventListener('pointerup',endDrag);renderer.domElement.addEventListener('pointercancel',endDrag);
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}window.addEventListener('resize',resize);resize();updateUI();
-function animate(now){requestAnimationFrame(animate);if(!state.paused)updateTrace(now/1000);orbit.update();renderer.render(scene,camera)}requestAnimationFrame(animate);$('status').textContent='● INTERACTIVE 3D MESH READY';
+function animate(now){requestAnimationFrame(animate);if(activeKnob||knobSettling){const c=(activeKnob||knobs.find(k=>k.userData.control&&Math.abs(state[k.userData.control]-knobTargets[k.userData.control])>0.0001))?.userData.control;if(c){const diff=knobTargets[c]-state[c];const minStep=c==='freq'?.015:c==='amp'?.00015:.035;if(Math.abs(diff)<minStep){state[c]=knobTargets[c];if(!activeKnob)knobSettling=false}else state[c]+=diff*.14;$(c).value=String(state[c]);updateUI()}else knobSettling=false}else if(!state.paused)updateTrace(now/1000);orbit.update();renderer.render(scene,camera)}requestAnimationFrame(animate);$('status').textContent='● INTERACTIVE 3D MESH READY';
 function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
 $('glb').addEventListener('click',async()=>{try{$('glb').disabled=true;$('status').textContent='● BUILDING GLB MESH…';const ex=new GLTFExporter();const data=await ex.parseAsync(root,{binary:true,onlyVisible:true});download(new Blob([data],{type:'model/gltf-binary'}),'oscilloscopes-art-v03.glb');$('status').textContent='● GLB EXPORTED'}catch(e){console.error(e);$('status').textContent='Export failed — try again'}finally{$('glb').disabled=false}});
 async function makeUSDZ(){const exporter=new USDZExporter();return await exporter.parseAsync(root,{ar:true})}
