@@ -50,9 +50,9 @@ import {USDZExporter} from 'three/addons/exporters/USDZExporter.js';
 const $=id=>document.getElementById(id), stage=$('stage');
 const state={freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',mode:'lissajous',paused:false};
 const scene=new THREE.Scene();scene.background=new THREE.Color('#141b15');scene.fog=new THREE.Fog('#141b15',10,24);
-const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(6.9,5.0,10.2);
+const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(8.8,5.8,13.6);
 const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;stage.prepend(renderer.domElement);
-const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(.75,.85,0);orbit.enableDamping=true;orbit.maxDistance=17;orbit.minDistance=3.5;
+const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(2.7,.85,0);orbit.enableDamping=true;orbit.maxDistance=20;orbit.minDistance=3.5;
 scene.add(new THREE.HemisphereLight(0xdcebd8,0x25291f,2.1));
 const key=new THREE.DirectionalLight(0xffe3b4,3.1);key.position.set(3,7,5);scene.add(key);
 const rim=new THREE.PointLight(0x86ff9b,18,9);rim.position.set(-3,3,2);scene.add(rim);
@@ -67,10 +67,15 @@ box(root,'Workbench top',[0,-.23,0],[8.8,.22,5.1],wood);
 box(root,'Workbench front edge',[0,-.35,2.48],[8.8,.08,.12],wood2);
 for(const x of [-3.7,3.7])for(const z of [-1.9,1.9]){const leg=box(root,'Workbench leg',[x,-1.08,z],[.18,1.45,.18],dark);leg.rotation.z=x<0?-.015:.015}
 for(let i=0;i<16;i++){const line=box(root,'Wood grain',[-3.8+i*.5,-.113,0],[.012,.004,4.7],wood2);line.material=wood2}
+// A separate adjacent workbench for the microscope, with its own top, apron, legs, and grain.
+box(root,'Microscope bench top',[7.35,-.23,0],[5.75,.22,5.1],wood);
+box(root,'Microscope bench front edge',[7.35,-.35,2.48],[5.75,.08,.12],wood2);
+for(const x of [5.0,9.7])for(const z of [-1.9,1.9])box(root,'Microscope bench leg',[x,-1.08,z],[.18,1.45,.18],dark);
+for(let i=0;i<11;i++)box(root,'Microscope bench wood grain',[4.8+i*.5,-.113,0],[.012,.004,4.7],wood2);
 
  // Vintage JEOL JSM-5200 scanning electron microscope: custom 3D exterior mesh.
  // This is a visual reconstruction, not an engineering-accurate CAD model.
- const sem=new THREE.Group();sem.name='JEOL JSM-5200 Scanning Electron Microscope';sem.position.set(3.05,-.115,-.42);root.add(sem);
+ const sem=new THREE.Group();sem.name='JEOL JSM-5200 Scanning Electron Microscope';sem.position.set(7.35,-.115,-.42);root.add(sem);
  const semCream=mat('#c8c9b9',.42,.3),semLight=mat('#d9dacc',.38,.28),semShadow=mat('#747b73',.38,.58),semBlack=mat('#171c19',.5,.3),semSteel=mat('#aeb6b0',.28,.68),semBlue=mat('#243b45',.28,.45),semAmber=mat('#d5a34a',.35,.32);
  box(sem,'JSM-5200 lower plinth',[0,.16,0],[1.75,.30,1.48],semShadow);
  box(sem,'JSM-5200 base cabinet',[0,.53,0],[1.55,.52,1.30],semCream);
@@ -108,7 +113,7 @@ for(let i=0;i<16;i++){const line=box(root,'Wood grain',[-3.8+i*.5,-.113,0],[.012
  box(sem,'Rear vacuum module',[0,1.10,-.72],[.66,.48,.25],semShadow);
  box(sem,'Rear vent panel',[0,1.12,-.855],[.48,.30,.025],semBlack);
  for(let i=0;i<7;i++)box(sem,'Rear vent '+(i+1),[-.19+i*.063,1.12,-.872],[.018,.22,.012],semSteel);
- for(const x of [-.62,.62])for(const z of [-.48,.48])cylinder(sem,'Rubber isolator foot',[x,.035,z],.105,.10,rubber,24);
+ for(const x of [-.62,.62])for(const z of [-.48,.48])box(sem,'Rubber isolator foot',[x,.055,z],[.22,.11,.22],rubber);
  textLabel(sem,'SCANNING ELECTRON',[-.60,.24,.755],.042,'#e6e9e0');
 // instrument case
 const instrument=new THREE.Group();instrument.position.set(0,.98,.05);root.add(instrument);
@@ -191,7 +196,7 @@ function updateUI(){for(const k of ['freq','amp','phase','glow'])$(k+'Val').text
 $('mode').addEventListener('change',e=>{state.mode=e.target.value;updateTrace()});
 document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.color=b.dataset.color;$('colorLabel').textContent=b.dataset.label;updateTrace()}));
 $('pause').addEventListener('click',()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'Resume animation':'Pause animation'});
-$('reset').addEventListener('click',()=>{camera.position.set(6.9,5.0,10.2);orbit.target.set(.75,.85,0);orbit.update()});
+$('reset').addEventListener('click',()=>{camera.position.set(8.8,5.8,13.6);orbit.target.set(2.7,.85,0);orbit.update()});
 const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let activeKnob=null,lastY=0;
 renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(knobs,true);if(hits.length){let o=hits[0].object;while(o&&!knobs.includes(o))o=o.parent;if(o){activeKnob=o;lastY=e.clientY;orbit.enabled=false;renderer.domElement.setPointerCapture(e.pointerId)}}});
 renderer.domElement.addEventListener('pointermove',e=>{if(!activeKnob)return;const delta=(lastY-e.clientY);lastY=e.clientY;const c=activeKnob.userData.control;const el=$(c);const step=c==='freq'?.5:c==='amp'?.01:1;el.value=String(Math.max(Number(el.min),Math.min(Number(el.max),Number(el.value)+delta*step*2)));state[c]=Number(el.value);updateUI()});
