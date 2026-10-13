@@ -287,7 +287,7 @@ cable([[-.95,3.30,-1.19],[-1.22,3.05,-1.35],[-1.30,2.45,-1.50],[-1.10,1.95,-1.42
 cable([[-.95,3.30,-1.19],[-.55,3.08,-1.54],[1.25,2.98,-2.22],[4.90,2.92,-2.27],[6.85,2.72,-1.95],[7.05,2.20,-1.48],[7.12,1.18,-1.17],[7.20,.55,-1.12]],'#343c56');
 // Outlet B to converter, then simulated DC output to the Jacob's ladder.
 cable([[1.18,3.30,-1.19],[1.55,3.28,-1.30],[2.10,3.28,-1.36]],'#d6a45d');
-cable([[3.48,3.32,-1.57],[4.08,3.32,-1.57],[4.72,3.28,-1.52],[5.15,3.23,-1.49]],'#80cfff');
+cable([[3.48,3.32,-1.57],[4.08,3.32,-1.57],[4.72,3.28,-1.52],[5.25,3.23,-1.49],[5.78,3.22,-1.48]],'#80cfff');
 panelLabel('SIMULATED POWER PATHS · EDUCATIONAL ONLY',3.55,3.78,-2.32,.060,'#c8c9ff');
 setLadderPower(false);
 
@@ -346,7 +346,8 @@ const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let activeKnob
 renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);
  const hits=raycaster.intersectObjects(knobs,true);if(hits.length){let o=hits[0].object;while(o&&!knobs.includes(o))o=o.parent;if(o){activeKnob=o;knobSettling=false;lastX=e.clientX;const c=o.userData.control;knobTargets[c]=state[c];orbit.enabled=false;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='ew-resize';return}}
  const controls=raycaster.intersectObjects([...scopeButtons,...semPhysicalControls,...powerControls],false);if(!controls.length)return;const obj=controls[0].object;pressedMesh=obj;obj.userData.pressZ??=obj.position.z;obj.position.z=obj.userData.pressZ-.035;orbit.enabled=false;renderer.domElement.style.cursor='pointer';renderer.domElement.setPointerCapture(e.pointerId);
- if(obj.userData.powerAction==='toggle')setLadderPower(!ladderPowered);\n if(obj.userData.scopeAction==='pause')$('pause').click();
+ if(obj.userData.powerAction==='toggle')setLadderPower(!ladderPowered);
+ if(obj.userData.scopeAction==='pause')$('pause').click();
  else if(obj.userData.scopeAction==='reset')$('reset').click();
  else if(obj.userData.scopeAction==='mode'){const modes=['lissajous','sine','circle','spiral','triangle','square'];const select=$('mode');select.value=modes[(modes.indexOf(select.value)+1)%modes.length];select.dispatchEvent(new Event('change'))}
  if(obj.userData.semAction==='rescan')$('semRescan').click();
