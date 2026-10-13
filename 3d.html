@@ -16,8 +16,8 @@
 /* iOS-inspired translucent glass polish */
 body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),radial-gradient(ellipse at 92% 18%,#285d72 0%,transparent 36%),linear-gradient(145deg,#17162b,#111321 72%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;letter-spacing:.005em}
 .eyebrow,.val,.status,.back{color:#d8d4ff}
-.stage{border-color:#aaa8d54d;background:radial-gradient(ellipse at 50% 42%,#343c58,#111321 75%);box-shadow:0 24px 70px #0506168c, inset 0 1px #ffffff18}
-.stage-hint,.badge{background:#22253bc2;backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);border-color:#ffffff30;color:#e1e5ff}
+.stage{border-color:#aaa8d56b;background:radial-gradient(ellipse at 50% 38%,#454766 0%,#25263d 42%,#10111f 78%);box-shadow:0 26px 78px #050616a6,inset 0 1px #ffffff24,inset 0 -24px 70px #08091735}
+.stage-hint,.badge{background:#17192bdc;backdrop-filter:blur(18px) saturate(155%);-webkit-backdrop-filter:blur(18px) saturate(155%);border-color:#c9c7ff55;color:#f0efff;box-shadow:0 5px 20px #05061655}
 .panel .card,.card,.sem-lab{background:linear-gradient(145deg,#ffffff14,#b6c7ff08);border-color:#ffffff27;box-shadow:0 14px 38px #05061630,inset 0 1px #ffffff20;backdrop-filter:blur(22px) saturate(155%);-webkit-backdrop-filter:blur(22px) saturate(155%)}
 .title{color:#c2c6e8}.title b{color:#f4f2ff}
 .btn,.sem-sample-btn{background:linear-gradient(145deg,#ffffff1b,#c7d6ff0b);border:1px solid #ffffff35;color:#f0efff;border-radius:12px;box-shadow:inset 0 1px #ffffff25,0 4px 12px #06081722;backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);transition:transform .16s ease,background .16s ease,border-color .16s ease,box-shadow .16s ease}
@@ -231,8 +231,11 @@ const shelfWood=mat('#493d54',.42,.35),shelfEdge=mat('#857ca4',.3,.62),powerDark
 box(root,'Raised electronics shelf',[3.55,3.02,-1.82],[11.65,.16,1.28],shelfWood);
 box(root,'Shelf front metal trim',[3.55,2.94,-1.16],[11.65,.08,.055],shelfEdge);
 for(const x of [-1.72,8.82]){
- box(root,'Shelf upright bracket',[x,2.22,-2.30],[.12,1.48,.12],shelfEdge);
- box(root,'Shelf bracket foot',[x,1.52,-2.22],[.42,.08,.24],powerDark);
+ // Full-height end supports run from the shelf down to the workbench, with reinforced feet.
+ box(root,'Full-height shelf support leg',[x,1.40,-2.30],[.16,3.04,.16],shelfEdge);
+ box(root,'Shelf support upper collar',[x,2.72,-2.30],[.23,.16,.23],powerMetal);
+ box(root,'Shelf support foot plate',[x,-.105,-2.30],[.44,.09,.36],powerDark);
+ box(root,'Shelf support foot trim',[x,-.052,-2.30],[.32,.025,.26],shelfEdge);
 }
 function panelLabel(text,x,y,z,size=.075,color='#e3e7ff'){return textLabel(root,text,[x,y,z],size,color)}
 // Dual mains outlet A: visually distributes simulated power to both instruments.
@@ -257,7 +260,7 @@ box(converter,'AC DC converter face',[2.72,3.34,-1.326],[1.42,.40,.045],powerFac
 box(converter,'Converter display glass',[2.48,3.36,-1.295],[.64,.22,.018],mat('#101a2d',.18,.1));
 panelLabel('AC  ~',2.48,3.37,-1.278,.105,'#ffd18b');
 panelLabel('DC  ⎓',3.00,3.37,-1.278,.095,'#9fe4ff');
-panelLabel('AC → DC CONVERTER',2.72,3.205,-1.285,.085,'#f1f4ff');
+// Floating converter title removed at user request; the front-panel readouts remain.
 for(let i=0;i<4;i++)box(converter,'Converter cooling slot '+i,[3.30,3.25+i*.055,-1.294],[.20,.018,.012],shelfEdge);
 // Jacob's ladder module: clean, taller electrodes and a straight-rising simulated arc.
 const ladder=new THREE.Group();ladder.name='Simulated Jacob ladder';root.add(ladder);
@@ -315,7 +318,7 @@ function updateLadder(t){
 }
 // Physical jack plugs seated in the outlet face; the lead begins at each plug body.
 function outletJack(name,x,y,z,color){const plug=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.14,20),mat(color,.24,.42));plug.name=name;plug.rotation.x=Math.PI/2;plug.position.set(x,y,z);root.add(plug);const collar=new THREE.Mesh(new THREE.CylinderGeometry(.073,.073,.035,20),powerMetal);collar.name=name+' locking collar';collar.rotation.x=Math.PI/2;collar.position.set(x,y,z+.055);root.add(collar)}
-outletJack('Oscilloscope outlet jack',-1.19,3.33,-1.075,'#c9d7f5');
+// Removed the stray oscilloscope-side plug; SEM power jack remains.
 outletJack('Electron microscope outlet jack',-.71,3.33,-1.075,'#b8dfff');
 // Two independent instrument leads emerge from their own jacks and stay just above the shelf/table surfaces.
 // Oscilloscope leads intentionally removed at user request.
