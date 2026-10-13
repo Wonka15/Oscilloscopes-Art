@@ -274,6 +274,7 @@ $('png').addEventListener('click',()=>{renderer.render(scene,camera);renderer.do
 
 // Virtual SEM simulation uses a published apple-cuticle SEM figure as its source image.
 const semCanvas=$('semCanvas'), semCtx=semCanvas.getContext('2d'), semImage=new Image();
+const semProcessCanvas=document.createElement('canvas');semProcessCanvas.width=semCanvas.width;semProcessCanvas.height=semCanvas.height;const semProcessCtx=semProcessCanvas.getContext('2d');
 semImage.crossOrigin='anonymous';
 semImage.src='https://mdpi-res.com/d_attachment/molecules/molecules-25-05955/article_deploy/molecules-25-05955-g005.png';
 const semState={sample:'outer',detector:'se',mag:2,focus:82,bright:55,contrast:68,voltage:5,speed:1,paused:false,grain:true,frame:1,phase:0,loaded:false};
@@ -319,8 +320,7 @@ function drawSem(){
        for(let k=0;k<3;k++){const px=x+Math.sin(seed+k*9)*cellW*.24,py=y+Math.cos(seed+k*4)*cellH*.2;ctx.fillStyle='#c5c8c1';ctx.beginPath();ctx.ellipse(px,py,Math.max(2,3*zoom),Math.max(1.5,2*zoom),seed,0,Math.PI*2);ctx.fill()}
      }
    }
-   ctx.filter='contrast('+(semState.contrast*1.55)+'%) brightness('+(semState.bright*1.35)+'%)'+(semState.focus<100?' blur('+((100-semState.focus)/26)+'px)':'');
-   ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.filter='none';ctx.globalCompositeOperation='destination-in';ctx.fillStyle='#fff';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';
+   semProcessCtx.clearRect(0,0,w,h);semProcessCtx.drawImage(semCanvas,0,0);ctx.clearRect(0,0,w,h);ctx.filter='contrast('+(semState.contrast*1.55)+'%) brightness('+(semState.bright*1.35)+'%)'+(semState.focus<100?' blur('+((100-semState.focus)/26)+'px)':'');ctx.drawImage(semProcessCanvas,0,0);ctx.filter='none';
  }
  // Detector response applies to both the published micrograph and the fallback texture.
  if(semState.detector==='bse'){
