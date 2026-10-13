@@ -8,6 +8,10 @@
 <style>
 :root{color-scheme:dark;--bg:#101411;--panel:#1a211c;--line:#3b4b3e;--green:#baff7b;--muted:#91a092;--cream:#e7e8db}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#29392c,#101411 62%);color:var(--cream);font:13px ui-monospace,SFMono-Regular,Menlo,monospace}button,input{font:inherit}button{cursor:pointer}.app{max-width:1400px;margin:auto;padding:18px}.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.eyebrow{font-size:10px;letter-spacing:.18em;color:var(--green)}h1{font-size:clamp(18px,3vw,27px);margin:5px 0 0;letter-spacing:-.04em}.tag{font-size:10px;border:1px solid var(--line);border-radius:20px;padding:9px 12px;color:var(--muted)}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}.stage{height:min(72vh,760px);min-height:430px;border:1px solid #3b4b3e;border-radius:16px;overflow:hidden;position:relative;background:radial-gradient(ellipse at 50% 42%,#29352b,#111713 70%);box-shadow:0 20px 70px #0008}.stage canvas{display:block;width:100%;height:100%;touch-action:none}.stage-hint{position:absolute;bottom:12px;left:14px;font-size:10px;color:#9eae9d;background:#101711c9;padding:9px 11px;border:1px solid #ffffff14;border-radius:7px;pointer-events:none}.badge{position:absolute;top:13px;left:14px;font-size:10px;letter-spacing:.12em;color:var(--green);background:#101711d9;padding:9px 11px;border:1px solid #baff7b35;border-radius:7px;pointer-events:none}.panel{display:flex;flex-direction:column;gap:11px}.card{border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#202922,#171d19);padding:14px}.title{display:flex;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:13px}.title b{font-weight:500;color:var(--cream)}.control{margin:13px 0}.row{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:11px}.val{color:var(--green);font-variant-numeric:tabular-nums}.range{width:100%;accent-color:var(--green)}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}.btn{border:1px solid #465848;background:#28352b;color:#e0e8dc;border-radius:8px;padding:10px 8px;font-size:10px}.btn.primary{background:var(--green);color:#101810;border-color:var(--green);font-weight:bold}.btn:disabled{opacity:.5;cursor:wait}.note{font-size:10px;line-height:1.6;color:#89998a;margin:10px 0 0}.status{font-size:10px;color:var(--green);line-height:1.6}.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#718173;font-size:9px;margin-top:13px}.back{color:var(--green);text-decoration:none}.swatches{display:flex;gap:8px}.swatch{width:27px;height:27px;border-radius:50%;border:2px solid #29372b;background:var(--c);outline:1px solid #657565}.swatch.active{outline:2px solid var(--c)}@media(max-width:850px){.layout{grid-template-columns:1fr}.stage{height:55vh;min-height:340px}.panel{display:grid;grid-template-columns:1fr 1fr;align-items:start}.panel .card:last-child{grid-column:1/-1}}@media(max-width:520px){.app{padding:12px}.stage{height:49vh;min-height:310px}.panel{grid-template-columns:1fr}.panel .card:last-child{grid-column:auto}.tag{display:none}.head{align-items:flex-start}}
+
+/* Virtual SEM sample viewer */
+.sem-lab{margin-top:16px;border:1px solid #3b4b3e;border-radius:16px;padding:16px;background:linear-gradient(145deg,#202922,#131a15);box-shadow:0 18px 55px #0005}
+.sem-lab-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.sem-lab-head h2{font-size:clamp(16px,2.5vw,22px);margin:5px 0}.sem-grid{display:grid;grid-template-columns:minmax(0,1.5fr) minmax(250px,.8fr);gap:14px}.sem-screen{min-height:330px;position:relative;overflow:hidden;border:1px solid #526052;border-radius:10px;background:#050806}.sem-screen canvas{display:block;width:100%;height:100%;min-height:330px}.sem-screen-top,.sem-screen-bottom{position:absolute;left:12px;right:12px;display:flex;justify-content:space-between;gap:10px;color:#caffaa;font-size:10px;text-shadow:0 1px 4px #000;background:#071008a8;padding:8px;border-radius:5px;pointer-events:none}.sem-screen-top{top:10px}.sem-screen-bottom{bottom:10px}.sem-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sem-controls .control{margin:5px 0 10px}.sem-controls select{width:100%;text-align:left}.sem-statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.sem-stat{padding:10px;border:1px solid #344537;border-radius:7px;background:#101711}.sem-stat span{display:block;font-size:9px;color:#8fa28e;margin-bottom:6px}.sem-stat b{color:#caffaa;font-size:13px;font-weight:500}.sem-scanline{height:2px;position:absolute;left:0;right:0;top:0;background:#caffaa;opacity:.75;box-shadow:0 0 14px #aaff78;pointer-events:none}.sem-disclaimer{color:#a7b5a5;font-size:10px;line-height:1.65;margin:12px 0 0}.sem-source{color:#baff7b;text-decoration:none}.sem-toggle{display:flex;align-items:center;gap:8px;font-size:10px;color:#a7b5a5;margin-top:8px}.sem-toggle input{accent-color:#baff7b}@media(max-width:850px){.sem-grid{grid-template-columns:1fr}.sem-controls{grid-template-columns:1fr 1fr}}@media(max-width:520px){.sem-lab{padding:11px}.sem-screen,.sem-screen canvas{min-height:280px}.sem-controls{grid-template-columns:1fr 1fr}.sem-lab-head{display:block}}
 </style>
 </head>
 <body><div class="app">
@@ -37,7 +41,42 @@
 <div class="buttons"><button class="btn primary" id="ar">View in AR</button><button class="btn" id="glb">Export GLB</button><button class="btn" id="usdz">Export USDZ</button><button class="btn" id="png">Save image</button></div>
 <p class="note" id="exportNote">AR support depends on your browser/device. On iPad, Export USDZ can open the model in Apple's AR Quick Look when supported. GLB is a portable 3D mesh file.</p><p class="status" id="status">● 3D scene initializing…</p>
 </section></aside></div>
-<footer><a class="back" href="./">← Back to Vector Lab</a><span>PROCEDURAL 3D MESH · NOT TEST EQUIPMENT</span><span>OSCILLOSCOPES ART</span></footer>
+
+<section class="sem-lab" id="virtualSemLab">
+  <div class="sem-lab-head"><div><div class="eyebrow">SPECIMEN BAY · LIVE SCAN SIMULATOR</div><h2>Virtual SEM / Apple Microstructure</h2><div class="note">Load an apple sample, change magnification, and watch the scan pass across real scientific micrograph imagery.</div></div><div class="tag">SIMULATED DETECTOR</div></div>
+  <div class="sem-grid">
+    <div class="sem-screen" id="semScreen">
+      <canvas id="semCanvas" width="1000" height="700" aria-label="Animated scanning electron microscope view of apple tissue"></canvas>
+      <div class="sem-screen-top"><span id="semImageLabel">APPLE CUTICLE · SEM MICROGRAPH</span><span id="semScanStatus">● SCANNING</span></div>
+      <div class="sem-scanline" id="semScanline"></div>
+      <div class="sem-screen-bottom"><span id="semMagnificationReadout">×1,200</span><span id="semScaleReadout">10 μm</span><span id="semFrameReadout">FRAME 0001</span></div>
+    </div>
+    <div class="card">
+      <div class="title"><b>Specimen & beam</b><span>SEM-01</span></div>
+      <div class="sem-controls">
+        <div class="control"><div class="row"><label for="semSample">Sample region</label></div><select class="btn" id="semSample"><option value="outer">Apple peel · outer cuticle</option><option value="inner">Apple peel · inner face</option><option value="cross">Apple skin · tissue section</option></select></div>
+        <div class="control"><div class="row"><label for="semDetector">Detector mode</label></div><select class="btn" id="semDetector"><option value="se">Secondary electrons</option><option value="bse">Backscattered electrons</option><option value="color">False-color overlay</option></select></div>
+        <div class="control"><div class="row"><label for="semMag">Magnification</label><output class="val" id="semMagVal">×1,200</output></div><input class="range" id="semMag" type="range" min="1" max="5" value="2" step="1"></div>
+        <div class="control"><div class="row"><label for="semFocus">Focus</label><output class="val" id="semFocusVal">82%</output></div><input class="range" id="semFocus" type="range" min="0" max="100" value="82"></div>
+        <div class="control"><div class="row"><label for="semBright">Brightness</label><output class="val" id="semBrightVal">55%</output></div><input class="range" id="semBright" type="range" min="20" max="100" value="55"></div>
+        <div class="control"><div class="row"><label for="semContrast">Contrast</label><output class="val" id="semContrastVal">68%</output></div><input class="range" id="semContrast" type="range" min="20" max="100" value="68"></div>
+        <div class="control"><div class="row"><label for="semVoltage">Accelerating voltage</label><output class="val" id="semVoltageVal">5.0 kV</output></div><input class="range" id="semVoltage" type="range" min="1" max="20" value="5" step=".5"></div>
+        <div class="control"><div class="row"><label for="semSpeed">Scan speed</label><output class="val" id="semSpeedVal">1.0×</output></div><input class="range" id="semSpeed" type="range" min=".25" max="3" value="1" step=".25"></div>
+      </div>
+      <div class="buttons"><button class="btn primary" id="semPause">Pause scan</button><button class="btn" id="semRescan">New scan frame</button></div>
+      <div class="sem-statgrid">
+        <div class="sem-stat"><span>SIMULATED DETECTOR SIGNAL</span><b id="semSignal">68.4 a.u.</b></div>
+        <div class="sem-stat"><span>WORKING DISTANCE</span><b id="semWD">8.5 mm</b></div>
+        <div class="sem-stat"><span>SCAN PROGRESS</span><b id="semProgress">14%</b></div>
+        <div class="sem-stat"><span>FRAME RATE</span><b id="semFPS">30 fps</b></div>
+      </div>
+      <label class="sem-toggle"><input id="semGrain" type="checkbox" checked> Add detector grain / scan texture</label>
+      <p class="sem-disclaimer">Scientific visualization, not a physical measurement. The moving beam and detector values are simulated. The image source is a published apple-cuticle SEM study; changing controls adjusts the view and scan effect, not the original microscope data.</p>
+      <p class="sem-disclaimer">Image source: <a class="sem-source" href="https://pmc.ncbi.nlm.nih.gov/articles/PMC7767305/" target="_blank" rel="noreferrer">Arrieta-Baez et al., Molecules (2020), Figure 5</a>.</p>
+    </div>
+  </div>
+</section>
+\n<footer><a class="back" href="./">← Back to Vector Lab</a><span>PROCEDURAL 3D MESH · NOT TEST EQUIPMENT</span><span>OSCILLOSCOPES ART</span></footer>
 </div>
 <script type="importmap">
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
@@ -209,4 +248,52 @@ async function makeUSDZ(){const exporter=new USDZExporter();return await exporte
 $('usdz').addEventListener('click',async()=>{try{$('usdz').disabled=true;$('status').textContent='● PACKING USDZ MODEL…';const data=await makeUSDZ();download(new Blob([data],{type:'model/vnd.usdz+zip'}),'oscilloscopes-art-v03.usdz');$('status').textContent='● USDZ EXPORTED — OPEN FILE FOR AR'}catch(e){console.error(e);$('status').textContent='USDZ export unavailable in this browser'}finally{$('usdz').disabled=false}});
 $('ar').addEventListener('click',async()=>{try{if(navigator.xr&&await navigator.xr.isSessionSupported('immersive-ar')){const session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['local']});renderer.xr.enabled=true;renderer.xr.setSession(session);$('status').textContent='● AR SESSION ACTIVE';session.addEventListener('end',()=>{$('status').textContent='● AR SESSION ENDED'})}else{ $('status').textContent='● PREPARING AR FILE…';const data=await makeUSDZ();const blob=new Blob([data],{type:'model/vnd.usdz+zip'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.setAttribute('rel','ar');a.href=url;a.style.display='none';const img=document.createElement('img');img.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';a.appendChild(img);document.body.appendChild(a);a.click();$('status').textContent='● IF QUICK LOOK DID NOT OPEN, USE EXPORT USDZ';setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000)}}catch(e){console.error(e);$('status').textContent='AR not available here — export USDZ to try on iPad'}});
 $('png').addEventListener('click',()=>{renderer.render(scene,camera);renderer.domElement.toBlob(b=>{if(b)download(b,'oscilloscopes-art-3d-bench.png')})});
-</script></body></html>
+
+// Virtual SEM simulation uses a published apple-cuticle SEM figure as its source image.
+const semCanvas=$('semCanvas'), semCtx=semCanvas.getContext('2d'), semImage=new Image();
+semImage.crossOrigin='anonymous';
+semImage.src='https://mdpi-res.com/d_attachment/molecules/molecules-25-05955/article_deploy/molecules-25-05955-g005.png';
+const semState={sample:'outer',detector:'se',mag:2,focus:82,bright:55,contrast:68,voltage:5,speed:1,paused:false,grain:true,frame:1,phase:0,loaded:false};
+const semMagnifications=[300,1200,5000,12000,30000];
+semImage.onload=()=>{semState.loaded=true;drawSem()};
+semImage.onerror=()=>{semState.loaded=false;drawSem()};
+function semNoise(x,y){return (Math.sin(x*12.9898+y*78.233+semState.frame*3.17)*43758.5453)%1}
+function drawSem(){
+ const w=semCanvas.width,h=semCanvas.height,ctx=semCtx;ctx.save();ctx.clearRect(0,0,w,h);
+ const magFactor=[1,1.35,2.0,3.2,5.0][semState.mag-1];
+ if(semState.loaded){
+   const iw=semImage.naturalWidth,ih=semImage.naturalHeight;
+   const cropW=iw/magFactor,cropH=ih/magFactor;
+   let sx=(iw-cropW)*(.18+.12*Math.sin(semState.phase*.17)+(semState.sample==='inner'?.48:semState.sample==='cross'?.75:0));
+   let sy=(ih-cropH)*(.25+.18*Math.cos(semState.phase*.13)+(semState.sample==='cross'?.45:0));
+   sx=Math.max(0,Math.min(iw-cropW,sx));sy=Math.max(0,Math.min(ih-cropH,sy));
+   ctx.filter='grayscale(1) contrast('+ (semState.contrast*1.6)+'%) brightness('+ (semState.bright*1.45)+'%)'+(semState.focus<100?' blur('+((100-semState.focus)/24)+'px)':'');
+   ctx.drawImage(semImage,sx,sy,cropW,cropH,0,0,w,h);ctx.filter='none';
+   if(semState.detector==='bse'){ctx.fillStyle='rgba(195,205,184,.17)';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='screen';ctx.fillStyle='#c4d0c0';ctx.globalAlpha=.08;ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
+   if(semState.detector==='color'){const grad=ctx.createLinearGradient(0,0,w,h);grad.addColorStop(0,'rgba(100,255,140,.22)');grad.addColorStop(.5,'rgba(80,170,255,.15)');grad.addColorStop(1,'rgba(255,180,70,.25)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h)}
+ }else{
+   ctx.fillStyle='#101811';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#71866e';ctx.lineWidth=2;
+   for(let i=0;i<13;i++){const x=(i*89+semState.frame*13)%w,y=(i*47)%h;ctx.beginPath();ctx.ellipse(x,y,25+(i%4)*13,14+(i%3)*9,i*.3,0,Math.PI*2);ctx.stroke()}
+   ctx.fillStyle='#caffaa';ctx.font='22px monospace';ctx.fillText('APPLE CUTICLE MICROGRAPH LOADING',35,55);
+ }
+ if(semState.grain){ctx.globalAlpha=.10;for(let i=0;i<950;i++){const x=(i*137+semState.frame*17)%w,y=(i*71+semState.frame*11)%h;const n=semNoise(x,y);ctx.fillStyle=n>.0?'#f0f5e9':'#030503';ctx.fillRect(x,y,1+(i%2),1+(i%2))}ctx.globalAlpha=1}
+ // CRT scan texture and border
+ ctx.fillStyle='rgba(0,0,0,.16)';for(let y=2;y<h;y+=5)ctx.fillRect(0,y,w,1);
+ ctx.strokeStyle='rgba(186,255,123,.13)';ctx.lineWidth=2;ctx.strokeRect(2,2,w-4,h-4);
+ ctx.restore();
+ const mag=semMagnifications[semState.mag-1];$('semMagnificationReadout').textContent='×'+mag.toLocaleString('en-US');$('semMagVal').textContent='×'+mag.toLocaleString('en-US');
+ $('semScaleReadout').textContent=semState.mag<3?'10 μm':semState.mag<5?'2 μm':'500 nm';
+ $('semImageLabel').textContent=semState.sample==='inner'?'APPLE CUTICLE · INNER FACE':semState.sample==='cross'?'APPLE TISSUE · SECTION VIEW':'APPLE CUTICLE · OUTER FACE';
+ $('semSignal').textContent=(34+semState.voltage*4.7+semState.contrast*.19+Math.abs(Math.sin(semState.phase))*8).toFixed(1)+' a.u.';
+ $('semWD').textContent=(12.5-semState.mag*1.05).toFixed(1)+' mm';$('semProgress').textContent=Math.round(semState.phase%100)+'%';$('semFPS').textContent=Math.round(30*semState.speed)+' fps';
+ $('semFocusVal').textContent=semState.focus+'%';$('semBrightVal').textContent=semState.bright+'%';$('semContrastVal').textContent=semState.contrast+'%';$('semVoltageVal').textContent=semState.voltage.toFixed(1)+' kV';$('semSpeedVal').textContent=semState.speed.toFixed(2)+'×';
+ $('semScanStatus').textContent=semState.paused?'Ⅱ SCAN PAUSED':'● SCANNING';$('semFrameReadout').textContent='FRAME '+String(semState.frame).padStart(4,'0');
+}
+['semSample','semDetector'].forEach(id=>$(id).addEventListener('change',e=>{semState[id==='semSample'?'sample':'detector']=e.target.value;semState.phase+=11;drawSem()}));
+[['semMag','mag'],['semFocus','focus'],['semBright','bright'],['semContrast','contrast'],['semVoltage','voltage'],['semSpeed','speed']].forEach(([id,key])=>$(id).addEventListener('input',e=>{semState[key]=Number(e.target.value);drawSem()}));
+$('semGrain').addEventListener('change',e=>{semState.grain=e.target.checked;drawSem()});
+$('semPause').addEventListener('click',()=>{semState.paused=!semState.paused;$('semPause').textContent=semState.paused?'Resume scan':'Pause scan';drawSem()});
+$('semRescan').addEventListener('click',()=>{semState.frame++;semState.phase+=27;drawSem()});
+let semLast=0;function semAnimate(now){requestAnimationFrame(semAnimate);if(now-semLast>90){semLast=now;if(!semState.paused){semState.phase+=semState.speed; if(semState.phase>=100)semState.frame++;const line=$('semScanline');line.style.transform='translateY('+((semState.phase%100)/100* Math.max(0,$('semScreen').clientHeight-4))+'px)';drawSem()}}}requestAnimationFrame(semAnimate);
+drawSem();
+\n</script></body></html>
