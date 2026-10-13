@@ -285,7 +285,7 @@ semImage.onload=()=>{semState.loaded=true;drawSem()};
 semImage.onerror=()=>{semState.loaded=false;drawSem()};
 function semNoise(x,y){return (Math.sin(x*12.9898+y*78.233+semState.frame*3.17)*43758.5453)%1}
 const semSampleInfo={
- fly:{label:'FLY COMPOUND EYE · OMATIDIA',scale:['100 μm','20 μm','10 μm','5 μm','2 μm']},
+ fly:{label:'FLY COMPOUND EYE · OMMATIDIA',scale:['100 μm','20 μm','10 μm','5 μm','2 μm']},
  banana:{label:'BANANA PEEL · EPICUTICULAR WAX',scale:['100 μm','50 μm','20 μm','10 μm','5 μm']},
  wood:{label:'WOOD · LONGITUDINAL FIBERS & VESSELS',scale:['500 μm','100 μm','50 μm','20 μm','10 μm']},
  outer:{label:'APPLE CUTICLE · OUTER FACE',scale:['100 μm','20 μm','10 μm','2 μm','500 nm']},
@@ -314,7 +314,7 @@ function drawSem(){
  ctx.save();ctx.clearRect(0,0,w,h);
  const magFactor=[1,1.35,2.0,3.2,5.0][semState.mag-1];
  if(semState.loaded&&apple){
-   const iw=semImage.naturalWidth,ih=semImage.naturalHeight,cropW=iw*magFactor,cropH=ih*magFactor;
+   const iw=semImage.naturalWidth,ih=semImage.naturalHeight,cropW=iw/magFactor,cropH=ih/magFactor;
    const region=semState.sample==='inner'?.48:semState.sample==='cross'?.75:.18;
    let sx=(iw-cropW)*(region+.12*Math.sin(semState.phase*.055)),sy=(ih-cropH)*(.25+.18*Math.cos(semState.phase*.045)+(semState.sample==='cross'?.35:0));
    sx=Math.max(0,Math.min(iw-cropW,sx));sy=Math.max(0,Math.min(ih-cropH,sy));
