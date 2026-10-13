@@ -21,6 +21,14 @@
 <div class="control"><div class="row"><label for="glow">Trace intensity</label><output class="val" id="glowVal">70%</output></div><input class="range" id="glow" type="range" min="10" max="100" value="70"></div>
 <div class="control"><div class="row"><label>Phosphor</label><span class="val" id="colorLabel">Green</span></div><div class="swatches"><button class="swatch active" style="--c:#aaff78" data-color="#aaff78" data-label="Green" aria-label="Green"></button><button class="swatch" style="--c:#73f7ff" data-color="#73f7ff" data-label="Ice blue" aria-label="Ice blue"></button><button class="swatch" style="--c:#ff87dc" data-color="#ff87dc" data-label="Pink" aria-label="Pink"></button><button class="swatch" style="--c:#ffc36e" data-color="#ffc36e" data-label="Amber" aria-label="Amber"></button></div></div>
 </section>
+<section class="card"><div class="title"><b>Live audio / CRT</b><span>01B</span></div>
+<div class="control"><div class="row"><label for="audioFile">Play a sound file</label></div><input id="audioFile" type="file" accept="audio/*" class="btn" style="width:100%"></div>
+<div class="buttons"><button class="btn primary" id="audioPlay" disabled>Play audio</button><button class="btn" id="audioStop" disabled>Stop audio</button></div>
+<div class="control"><div class="row"><label for="radioUrl">Live radio stream URL</label></div><input id="radioUrl" type="url" placeholder="Paste station stream URL" class="btn" style="width:100%;text-align:left"></div>
+<button class="btn" id="radioConnect" style="width:100%">Connect radio stream</button>
+<p class="note">Choose a downloaded recording from UCSC's KZSC or paste a station's direct audio-stream URL. The CRT trace follows the actual audio waveform. Some radio streams block browser audio analysis (CORS); a downloaded recording works most reliably.</p>
+<p class="status" id="audioStatus">● AUDIO INPUT IDLE</p>
+</section>
 <section class="card"><div class="title"><b>Mesh / scene</b><span>02</span></div>
 <div class="control"><div class="row"><label for="mode">Waveform</label></div><select id="mode" class="btn" style="width:100%;text-align:left"><option value="lissajous">Lissajous mesh</option><option value="sine">Sine wave</option><option value="circle">Orbit</option><option value="spiral">Spiral</option><option value="triangle">Triangle</option><option value="square">Square</option></select></div>
 <div class="buttons"><button class="btn" id="reset">Reset view</button><button class="btn" id="pause">Pause animation</button></div>
@@ -93,7 +101,41 @@ cylinder(root,'Spool core',[-3,-.08,-1.4],.13,.25,rubber,32).rotation.x=Math.PI/
 const driver=box(root,'Screwdriver handle',[2.8,-.04,-1.55],[.18,.18,.68],mat('#bf7d40',.4,.2));driver.rotation.y=.32;
 const shaft=box(root,'Screwdriver shaft',[2.55,-.06,-1.2],[.045,.045,.45],edge);shaft.rotation.y=.32;
 // Add mesh waveform line
-function updateTrace(t=0){const arr=traceGeo.attributes.position.array,N=1200,phase=state.phase*Math.PI/180;for(let i=0;i<N;i++){const u=i/(N-1);let x=0,y=0;switch(state.mode){case'lissajous':x=1.08*state.amp*Math.sin(2*Math.PI*2*u+t*.45);y=.68*state.amp*Math.sin(2*Math.PI*3*u+phase+t*.45);break;case'circle':x=1.04*state.amp*Math.cos(2*Math.PI*u+t*.3);y=.68*state.amp*Math.sin(2*Math.PI*u+t*.3);break;case'spiral':{const a=6*Math.PI*u+t*.25,r=.03+.97*u;x=1.1*state.amp*r*Math.cos(a);y=.72*state.amp*r*Math.sin(a);break}case'sine':x=(u-.5)*2.3;y=.65*state.amp*Math.sin(2*Math.PI*(2+state.freq/40)*u+t);break;case'triangle':x=(u-.5)*2.3;y=.65*state.amp*(2/Math.PI)*Math.asin(Math.sin(2*Math.PI*3*u+t));break;case'square':x=(u-.5)*2.3;y=.55*state.amp*Math.sign(Math.sin(2*Math.PI*3*u+t));break}arr[i*3]=x;arr[i*3+1]=y;arr[i*3+2]=0}traceGeo.attributes.position.needsUpdate=true;traceGeo.computeBoundingSphere();traceMat.color.set(state.color);traceMat.opacity=.3+state.glow/140;traceMat.linewidth=1;green.color.set(state.color);green.emissive.set(state.color)}
+let audioAnalyser=null,audioData=null,audioCtx=null,audioElement=null,audioSource=null,audioObjectUrl=null;
+async function connectAudioElement(el){
+  try{
+    if(audioCtx){try{audioCtx.close()}catch{}}
+    audioCtx=new (window.AudioContext||window.webkitAudioContext)();
+    audioAnalyser=audioCtx.createAnalyser();audioAnalyser.fftSize=2048;audioAnalyser.smoothingTimeConstant=.72;
+    audioData=new Uint8Array(audioAnalyser.fftSize);
+    audioSource=audioCtx.createMediaElementSource(el);audioSource.connect(audioAnalyser);audioAnalyser.connect(audioCtx.destination);
+    await audioCtx.resume();audioElement=el;
+    $('audioPlay').disabled=false;$('audioStop').disabled=false;
+    $('audioStatus').textContent='● AUDIO CONNECTED — PRESS PLAY';
+    $('status').textContent='● CRT READY FOR LIVE AUDIO';
+  }catch(e){console.error(e);$('audioStatus').textContent='Audio setup failed. Try a local audio file.'}
+}
+$('audioFile').addEventListener('change',async e=>{
+  const file=e.target.files&&e.target.files[0];if(!file)return;
+  if(audioElement){audioElement.pause();audioElement.src='';}
+  if(audioObjectUrl)URL.revokeObjectURL(audioObjectUrl);
+  audioObjectUrl=URL.createObjectURL(file);const el=new Audio();el.src=audioObjectUrl;el.loop=false;
+  await connectAudioElement(el);$('audioStatus').textContent='● LOADED: '+file.name;
+});
+$('audioPlay').addEventListener('click',async()=>{
+  if(!audioElement)return;
+  try{await audioCtx.resume();await audioElement.play();$('audioStatus').textContent='● AUDIO PLAYING — CRT TRACE IS LIVE';$('audioPlay').textContent='Playing…';}catch(e){$('audioStatus').textContent='Tap Play again to allow audio playback.'}
+});
+$('audioStop').addEventListener('click',()=>{if(audioElement){audioElement.pause();audioElement.currentTime=0;}$('audioPlay').textContent='Play audio';$('audioStatus').textContent='● AUDIO STOPPED'});
+$('radioConnect').addEventListener('click',async()=>{
+  const url=$('radioUrl').value.trim();if(!url){$('audioStatus').textContent='Paste the station direct stream URL first.';return;}
+  if(audioElement){audioElement.pause();audioElement.src='';}
+  const el=new Audio();el.crossOrigin='anonymous';el.src=url;el.preload='none';
+  await connectAudioElement(el);
+  try{await el.play();$('audioStatus').textContent='● RADIO STREAM PLAYING — CRT TRACE IS LIVE';$('audioPlay').textContent='Playing…';}
+  catch(e){$('audioStatus').textContent='Connected. Press Play audio; if blocked, use a recording or a CORS-enabled stream.'}
+});
+function updateTrace(t=0){const arr=traceGeo.attributes.position.array,N=1200,phase=state.phase*Math.PI/180;if(audioAnalyser&&audioData){audioAnalyser.getByteTimeDomainData(audioData)}for(let i=0;i<N;i++){const u=i/(N-1);let x=0,y=0;if(audioAnalyser&&audioData){x=(u-.5)*2.3;y=((audioData[Math.floor(u*(audioData.length-1))]-128)/128)*.72*state.amp;}else switch(state.mode){case'lissajous':x=1.08*state.amp*Math.sin(2*Math.PI*2*u+t*.45);y=.68*state.amp*Math.sin(2*Math.PI*3*u+phase+t*.45);break;case'circle':x=1.04*state.amp*Math.cos(2*Math.PI*u+t*.3);y=.68*state.amp*Math.sin(2*Math.PI*u+t*.3);break;case'spiral':{const a=6*Math.PI*u+t*.25,r=.03+.97*u;x=1.1*state.amp*r*Math.cos(a);y=.72*state.amp*r*Math.sin(a);break}case'sine':x=(u-.5)*2.3;y=.65*state.amp*Math.sin(2*Math.PI*(2+state.freq/40)*u+t);break;case'triangle':x=(u-.5)*2.3;y=.65*state.amp*(2/Math.PI)*Math.asin(Math.sin(2*Math.PI*3*u+t));break;case'square':x=(u-.5)*2.3;y=.55*state.amp*Math.sign(Math.sin(2*Math.PI*3*u+t));break}arr[i*3]=x;arr[i*3+1]=y;arr[i*3+2]=0}traceGeo.attributes.position.needsUpdate=true;traceGeo.computeBoundingSphere();traceMat.color.set(state.color);traceMat.opacity=.3+state.glow/140;traceMat.linewidth=1;green.color.set(state.color);green.emissive.set(state.color)}
 function updateUI(){for(const k of ['freq','amp','phase','glow'])$(k+'Val').textContent=k==='freq'?Number(state.freq).toFixed(1)+' Hz':k==='amp'?Number(state.amp).toFixed(2)+' V':k==='phase'?Math.round(state.phase)+'°':Math.round(state.glow)+'%';for(const knob of knobs){const c=knob.userData.control;const max=c==='freq'?120:c==='amp'?1:360;const min=c==='freq'?5:c==='amp'?.2:0;const v=state[c];knob.rotation.z=-.78+(v-min)/(max-min)*1.56}updateTrace(performance.now()/1000)}
 ['freq','amp','phase','glow'].forEach(id=>$(id).addEventListener('input',e=>{state[id]=Number(e.target.value);updateUI()}));
 $('mode').addEventListener('change',e=>{state.mode=e.target.value;updateTrace()});
