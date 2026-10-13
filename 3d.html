@@ -24,9 +24,9 @@
 <section class="card"><div class="title"><b>Live audio / CRT</b><span>01B</span></div>
 <div class="control"><div class="row"><label for="audioFile">Play a sound file</label></div><input id="audioFile" type="file" accept="audio/*" class="btn" style="width:100%"></div>
 <div class="buttons"><button class="btn primary" id="audioPlay" disabled>Play audio</button><button class="btn" id="audioStop" disabled>Stop audio</button></div>
-<div class="control"><div class="row"><label for="radioUrl">Live radio stream URL</label></div><input id="radioUrl" type="url" placeholder="Paste station stream URL" class="btn" style="width:100%;text-align:left"></div>
-<button class="btn" id="radioConnect" style="width:100%">Connect radio stream</button>
-<p class="note">Choose a downloaded recording from UCSC's KZSC or paste a station's direct audio-stream URL. The CRT trace follows the actual audio waveform. Some radio streams block browser audio analysis (CORS); a downloaded recording works most reliably.</p>
+<div class="control"><div class="row"><label for="radioUrl">UCSC KZSC 88.1 FM live stream</label></div><input id="radioUrl" type="url" value="https://kzscfms1-geckohost.radioca.st/kzschigh" class="btn" style="width:100%;text-align:left"></div>
+<button class="btn primary" id="radioConnect" style="width:100%">▶ Play KZSC + visualize</button>
+<p class="note">Plays the official KZSC Santa Cruz 88.1 FM high-quality stream. The trace uses live audio data when the stream permits browser analysis; if the station's stream blocks analysis, the beam continues in a moving fallback pattern while the radio plays.</p>
 <p class="status" id="audioStatus">● AUDIO INPUT IDLE</p>
 </section>
 <section class="card"><div class="title"><b>Mesh / scene</b><span>02</span></div>
@@ -39,11 +39,14 @@
 </section></aside></div>
 <footer><a class="back" href="./">← Back to Vector Lab</a><span>PROCEDURAL 3D MESH · NOT TEST EQUIPMENT</span><span>OSCILLOSCOPES ART</span></footer>
 </div>
+<script type="importmap">
+{"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
+</script>
 <script type="module">
-import * as THREE from 'https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js';
-import {OrbitControls} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/controls/OrbitControls.js';
-import {GLTFExporter} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/exporters/GLTFExporter.js';
-import {USDZExporter} from 'https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/exporters/USDZExporter.js';
+import * as THREE from 'three';
+import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
+import {USDZExporter} from 'three/addons/exporters/USDZExporter.js';
 const $=id=>document.getElementById(id), stage=$('stage');
 const state={freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',mode:'lissajous',paused:false};
 const scene=new THREE.Scene();scene.background=new THREE.Color('#141b15');scene.fog=new THREE.Fog('#141b15',10,24);
@@ -104,16 +107,16 @@ const shaft=box(root,'Screwdriver shaft',[2.55,-.06,-1.2],[.045,.045,.45],edge);
 let audioAnalyser=null,audioData=null,audioCtx=null,audioElement=null,audioSource=null,audioObjectUrl=null;
 async function connectAudioElement(el){
   try{
-    if(audioCtx){try{audioCtx.close()}catch{}}
+    if(audioCtx){try{await audioCtx.close()}catch{}}
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
-    audioAnalyser=audioCtx.createAnalyser();audioAnalyser.fftSize=2048;audioAnalyser.smoothingTimeConstant=.72;
+    audioAnalyser=audioCtx.createAnalyser();audioAnalyser.fftSize=2048;audioAnalyser.smoothingTimeConstant=.68;
     audioData=new Uint8Array(audioAnalyser.fftSize);
     audioSource=audioCtx.createMediaElementSource(el);audioSource.connect(audioAnalyser);audioAnalyser.connect(audioCtx.destination);
     await audioCtx.resume();audioElement=el;
     $('audioPlay').disabled=false;$('audioStop').disabled=false;
-    $('audioStatus').textContent='● AUDIO CONNECTED — PRESS PLAY';
+    $('audioStatus').textContent='● AUDIO CONNECTED — STARTING CRT';
     $('status').textContent='● CRT READY FOR LIVE AUDIO';
-  }catch(e){console.error(e);$('audioStatus').textContent='Audio setup failed. Try a local audio file.'}
+  }catch(e){console.error(e);audioElement=el;$('audioPlay').disabled=false;$('audioStop').disabled=false;$('audioStatus').textContent='● RADIO READY — TAP PLAY';}
 }
 $('audioFile').addEventListener('change',async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
@@ -130,12 +133,12 @@ $('audioStop').addEventListener('click',()=>{if(audioElement){audioElement.pause
 $('radioConnect').addEventListener('click',async()=>{
   const url=$('radioUrl').value.trim();if(!url){$('audioStatus').textContent='Paste the station direct stream URL first.';return;}
   if(audioElement){audioElement.pause();audioElement.src='';}
-  const el=new Audio();el.crossOrigin='anonymous';el.src=url;el.preload='none';
+  const el=new Audio();el.crossOrigin='anonymous';el.src=url;el.preload='auto';el.playsInline=true;
   await connectAudioElement(el);
-  try{await el.play();$('audioStatus').textContent='● RADIO STREAM PLAYING — CRT TRACE IS LIVE';$('audioPlay').textContent='Playing…';}
-  catch(e){$('audioStatus').textContent='Connected. Press Play audio; if blocked, use a recording or a CORS-enabled stream.'}
+  try{await audioCtx?.resume();await el.play();$('audioStatus').textContent='● KZSC RADIO PLAYING — WATCH THE CRT';$('audioPlay').textContent='Playing…';$('audioStop').disabled=false;}
+  catch(e){console.warn(e);$('audioStatus').textContent='Radio is ready. Tap Play audio to start the stream.'}
 });
-function updateTrace(t=0){const arr=traceGeo.attributes.position.array,N=1200,phase=state.phase*Math.PI/180;if(audioAnalyser&&audioData){audioAnalyser.getByteTimeDomainData(audioData)}for(let i=0;i<N;i++){const u=i/(N-1);let x=0,y=0;if(audioAnalyser&&audioData){x=(u-.5)*2.3;y=((audioData[Math.floor(u*(audioData.length-1))]-128)/128)*.72*state.amp;}else switch(state.mode){case'lissajous':x=1.08*state.amp*Math.sin(2*Math.PI*2*u+t*.45);y=.68*state.amp*Math.sin(2*Math.PI*3*u+phase+t*.45);break;case'circle':x=1.04*state.amp*Math.cos(2*Math.PI*u+t*.3);y=.68*state.amp*Math.sin(2*Math.PI*u+t*.3);break;case'spiral':{const a=6*Math.PI*u+t*.25,r=.03+.97*u;x=1.1*state.amp*r*Math.cos(a);y=.72*state.amp*r*Math.sin(a);break}case'sine':x=(u-.5)*2.3;y=.65*state.amp*Math.sin(2*Math.PI*(2+state.freq/40)*u+t);break;case'triangle':x=(u-.5)*2.3;y=.65*state.amp*(2/Math.PI)*Math.asin(Math.sin(2*Math.PI*3*u+t));break;case'square':x=(u-.5)*2.3;y=.55*state.amp*Math.sign(Math.sin(2*Math.PI*3*u+t));break}arr[i*3]=x;arr[i*3+1]=y;arr[i*3+2]=0}traceGeo.attributes.position.needsUpdate=true;traceGeo.computeBoundingSphere();traceMat.color.set(state.color);traceMat.opacity=.3+state.glow/140;traceMat.linewidth=1;green.color.set(state.color);green.emissive.set(state.color)}
+function updateTrace(t=0){const arr=traceGeo.attributes.position.array,N=1200,phase=state.phase*Math.PI/180;let liveAudio=false;if(audioAnalyser&&audioData){audioAnalyser.getByteTimeDomainData(audioData);let energy=0;for(let j=0;j<audioData.length;j+=8)energy+=Math.abs(audioData[j]-128);liveAudio=energy>audioData.length*.025;}for(let i=0;i<N;i++){const u=i/(N-1);let x=0,y=0;if(liveAudio){x=(u-.5)*2.3;y=((audioData[Math.floor(u*(audioData.length-1))]-128)/128)*.72*state.amp;}else if(audioElement&&!audioElement.paused){x=(u-.5)*2.3;const pulse=Math.sin(2*Math.PI*(2.3*u)+t*2.2)+.42*Math.sin(2*Math.PI*(5.1*u)-t*3.7)+.22*Math.sin(2*Math.PI*(9*u)+t*1.3);const beat=Math.sin(t*3.1+Math.sin(t*.7));y=.27*state.amp*pulse*(.72+.28*beat);}else switch(state.mode){case'lissajous':x=1.08*state.amp*Math.sin(2*Math.PI*2*u+t*.45);y=.68*state.amp*Math.sin(2*Math.PI*3*u+phase+t*.45);break;case'circle':x=1.04*state.amp*Math.cos(2*Math.PI*u+t*.3);y=.68*state.amp*Math.sin(2*Math.PI*u+t*.3);break;case'spiral':{const a=6*Math.PI*u+t*.25,r=.03+.97*u;x=1.1*state.amp*r*Math.cos(a);y=.72*state.amp*r*Math.sin(a);break}case'sine':x=(u-.5)*2.3;y=.65*state.amp*Math.sin(2*Math.PI*(2+state.freq/40)*u+t);break;case'triangle':x=(u-.5)*2.3;y=.65*state.amp*(2/Math.PI)*Math.asin(Math.sin(2*Math.PI*3*u+t));break;case'square':x=(u-.5)*2.3;y=.55*state.amp*Math.sign(Math.sin(2*Math.PI*3*u+t));break}arr[i*3]=x;arr[i*3+1]=y;arr[i*3+2]=0}traceGeo.attributes.position.needsUpdate=true;traceGeo.computeBoundingSphere();traceMat.color.set(state.color);traceMat.opacity=.3+state.glow/140;traceMat.linewidth=1;green.color.set(state.color);green.emissive.set(state.color)}
 function updateUI(){for(const k of ['freq','amp','phase','glow'])$(k+'Val').textContent=k==='freq'?Number(state.freq).toFixed(1)+' Hz':k==='amp'?Number(state.amp).toFixed(2)+' V':k==='phase'?Math.round(state.phase)+'°':Math.round(state.glow)+'%';for(const knob of knobs){const c=knob.userData.control;const max=c==='freq'?120:c==='amp'?1:360;const min=c==='freq'?5:c==='amp'?.2:0;const v=state[c];knob.rotation.z=-.78+(v-min)/(max-min)*1.56}updateTrace(performance.now()/1000)}
 ['freq','amp','phase','glow'].forEach(id=>$(id).addEventListener('input',e=>{state[id]=Number(e.target.value);updateUI()}));
 $('mode').addEventListener('change',e=>{state.mode=e.target.value;updateTrace()});
