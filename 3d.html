@@ -139,22 +139,31 @@ for(let i=0;i<11;i++)box(root,'Microscope bench wood grain',[4.8+i*.5,-.113,0],[
  box(sem,'Specimen stage neck',[0,.73,.76],[.20,.10,.20],semSteel);
  box(sem,'Specimen exchange tray',[0,.67,.88],[.48,.045,.34],semShadow);
  box(sem,'Sample holder',[0,.715,.91],[.16,.035,.12],semSteel);
- // Side operator console with monochrome screen and physical controls.
+ // Side operator console with a live, textured SEM image screen and tactile controls.
+ const semDisplayCanvas=document.createElement('canvas');semDisplayCanvas.width=512;semDisplayCanvas.height=320;
+ const semDisplayCtx=semDisplayCanvas.getContext('2d');semDisplayCtx.fillStyle='#0a100b';semDisplayCtx.fillRect(0,0,512,320);semDisplayCtx.strokeStyle='#aaff78';semDisplayCtx.lineWidth=2;for(let i=0;i<18;i++){const x=(i*47)%512,y=(i*83)%320;semDisplayCtx.beginPath();semDisplayCtx.ellipse(x,y,18+(i%5)*8,10+(i%4)*6,i*.24,0,Math.PI*2);semDisplayCtx.stroke()}semDisplayCtx.fillStyle='#d6e4cf';semDisplayCtx.font='bold 17px monospace';semDisplayCtx.fillText('APPLE CUTICLE / SEM',18,28);
+ const semDisplayTexture=new THREE.CanvasTexture(semDisplayCanvas);semDisplayTexture.colorSpace=THREE.SRGBColorSpace;
+ const semPhysicalControls=[];
  const semConsole=new THREE.Group();semConsole.name='JSM-5200 operator console';semConsole.position.set(.48,.83,.34);semConsole.rotation.y=-.12;sem.add(semConsole);
  box(semConsole,'Console body',[.20,.08,.05],[.48,.70,.38],semCream);
  box(semConsole,'Console dark display bezel',[.20,.25,.255],[.36,.24,.035],semBlack);
- box(semConsole,'Console monochrome screen',[.20,.25,.277],[.29,.17,.012],mat('#293d34',.2,.2));
- textLabel(semConsole,'SEM',[.09,.24,.29],.047,'#b9f49a');
+ const semScreenMesh=box(semConsole,'Live apple SEM display',[.20,.25,.279],[.32,.19,.012],new THREE.MeshBasicMaterial({map:semDisplayTexture,side:THREE.DoubleSide}));semScreenMesh.material.toneMapped=false;
  for(let i=0;i<3;i++){
-   cylinder(semConsole,'Console control knob '+(i+1),[.10+i*.105,-.10,.265],.032,.04,semShadow,24);
-   cylinder(semConsole,'Console knob cap '+(i+1),[.10+i*.105,-.10,.289],.020,.012,semSteel,24);
+   const base=cylinder(semConsole,'Console control knob '+(i+1),[.10+i*.105,-.10,.265],.032,.04,semShadow,24);base.userData={semControl:['mag','focus','bright'][i],pressZ:base.position.z};semPhysicalControls.push(base);
+   const cap=cylinder(semConsole,'Console knob cap '+(i+1),[.10+i*.105,-.10,.289],.020,.012,semSteel,24);cap.userData={semControl:['mag','focus','bright'][i],pressZ:cap.position.z};semPhysicalControls.push(cap);
  }
- for(let i=0;i<4;i++)box(semConsole,'Console function key '+(i+1),[.09+i*.075,-.23,.26],[.045,.035,.02],i===0?semAmber:semShadow);
+ for(let i=0;i<4;i++){const key=box(semConsole,'Console function key '+(i+1),[.09+i*.075,-.23,.26],[.045,.035,.02],i===0?semAmber:semShadow);key.userData={semAction:['rescan','pause','detector','sample'][i],pressZ:key.position.z};semPhysicalControls.push(key)}
  box(sem,'Rear vacuum module',[0,1.10,-.72],[.66,.48,.25],semShadow);
  box(sem,'Rear vent panel',[0,1.12,-.855],[.48,.30,.025],semBlack);
  for(let i=0;i<7;i++)box(sem,'Rear vent '+(i+1),[-.19+i*.063,1.12,-.872],[.018,.22,.012],semSteel);
  for(const x of [-.62,.62])for(const z of [-.48,.48])box(sem,'Rubber isolator foot',[x,.055,z],[.22,.11,.22],rubber);
  textLabel(sem,'SCANNING ELECTRON',[-.60,.24,.755],.042,'#e6e9e0');
+ // A visible apple specimen on the exchange tray, with a stem and leaf.
+ const appleSkin=new THREE.MeshStandardMaterial({color:'#b51f2c',roughness:.34,metalness:.02});
+ const apple=new THREE.Mesh(new THREE.SphereGeometry(.145,32,24),appleSkin);apple.name='Apple specimen';apple.scale.set(1,1.12,.92);apple.position.set(0,.875,.91);sem.add(apple);
+ const appleCrown=new THREE.Mesh(new THREE.SphereGeometry(.078,24,16),appleSkin);appleCrown.scale.set(1,.62,.9);appleCrown.position.set(0,.985,.91);sem.add(appleCrown);
+ const stem=box(sem,'Apple stem',[.008,1.065,.91],[.025,.12,.025],wood2);stem.rotation.z=-.18;
+ const leaf=new THREE.Mesh(new THREE.SphereGeometry(.065,20,12),mat('#477c3d',.55));leaf.name='Apple leaf';leaf.scale.set(1.7,.18,.7);leaf.position.set(.075,1.08,.91);leaf.rotation.z=.35;sem.add(leaf);
 // instrument case
 const instrument=new THREE.Group();instrument.position.set(0,.98,.05);root.add(instrument);
 box(instrument,'Steel instrument chassis',[0,0,0],[4.45,2.55,.82],dark);
@@ -180,12 +189,13 @@ const knobs=[];
 function makeKnob(name,x,y,r,control){const g=new THREE.Group();g.name=name;g.position.set(x,y,.59);instrument.add(g);cylinder(g,name+' base',[0,0,0],r*1.18,.09,dark);cylinder(g,name+' dial',[0,0,.065],r,.14,mat('#303a32',.3,.45));cylinder(g,name+' cap',[0,0,.145],r*.68,.025,mat('#677466',.26,.48));const pointer=box(g,name+' pointer',[0,r*.39,.166],[.035,r*.33,.018],mat('#c9ff98',.25,.2));pointer.rotation.z=.15;for(let i=0;i<11;i++){const a=(-.78+i*.156);const tick=box(g,name+' tick',[Math.sin(a)*r*1.38,Math.cos(a)*r*1.38,.015],[.018,.07,.014],ivory);tick.rotation.z=-a}g.userData={control,pointer,baseRot:0};knobs.push(g);return g}
 makeKnob('Frequency knob',1.52,.22,.24,'freq');makeKnob('Amplitude knob',1.52,-.35,.21,'amp');makeKnob('Phase knob',1.52,-.88,.21,'phase');
 // Switches and cable jacks
-for(let i=0;i<3;i++){cylinder(instrument,'Button',[1.02-i*.34,-1.02,.55],.065,.08,mat(i===0?'#d2a45d':'#39463b',.25,.4),24)}
+const scopeButtons=[];
+for(let i=0;i<3;i++){const b=cylinder(instrument,'Scope push button '+(i+1),[1.02-i*.34,-1.02,.55],.065,.08,mat(i===0?'#d2a45d':'#39463b',.25,.4),24);b.userData={scopeAction:['pause','reset','mode'][i],pressZ:b.position.z};scopeButtons.push(b)}
 for(let i=0;i<2;i++){cylinder(instrument,'BNC connector',[-1.65+i*.35,-1.03,.54],.11,.12,edge);cylinder(instrument,'BNC dark center',[-1.65+i*.35,-1.03,.61],.055,.02,rubber)}
 // Flexible oscilloscope leads: routed over the tabletop, then over its front edge and down outside the table mesh.
 function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,100,.035,10,false),mat(color,.3,.2));mesh.name='Visible oscilloscope cable';root.add(mesh);return mesh}
-cable([[-1.65,-.05,.70],[-1.85,-.025,1.05],[-2.05,-.02,1.55],[-2.00,-.02,2.20],[-2.08,-.06,2.53],[-2.22,-.24,2.70],[-2.48,-.43,2.76],[-2.72,-.46,2.70],[-2.82,-.30,2.58],[-2.68,-.18,2.50]],'#293a2e');
-cable([[1.70,-.05,.68],[1.92,-.025,1.12],[2.14,-.02,1.62],[2.10,-.02,2.20],[2.17,-.06,2.53],[2.33,-.24,2.70],[2.60,-.43,2.76],[2.82,-.46,2.68],[2.90,-.31,2.57],[2.76,-.18,2.50]],'#28332b');
+cable([[-1.65,-.05,.70],[-1.85,-.025,1.05],[-2.05,-.02,1.55],[-2.00,-.02,2.20],[-2.08,-.02,2.42],[-2.12,-.02,2.57],[-2.20,-.04,2.68],[-2.40,-.22,2.79],[-2.64,-.39,2.82],[-2.82,-.31,2.73],[-2.70,-.18,2.63]],'#293a2e');
+cable([[1.70,-.05,.68],[1.92,-.025,1.12],[2.14,-.02,1.62],[2.10,-.02,2.20],[2.17,-.02,2.42],[2.20,-.02,2.57],[2.28,-.04,2.68],[2.48,-.22,2.79],[2.70,-.39,2.82],[2.88,-.31,2.73],[2.77,-.18,2.63]],'#28332b');
 // Small bench props: solder spool and screwdriver
 const spool=cylinder(root,'Solder spool',[-3,-.08,-1.4],.32,.23,edge,48);spool.rotation.x=Math.PI/2;spool.rotation.z=.3;
 cylinder(root,'Spool core',[-3,-.08,-1.4],.13,.25,rubber,32).rotation.x=Math.PI/2;
@@ -237,10 +247,22 @@ $('mode').addEventListener('change',e=>{state.mode=e.target.value;updateTrace()}
 document.querySelectorAll('.swatch').forEach(b=>b.addEventListener('click',()=>{document.querySelectorAll('.swatch').forEach(x=>x.classList.remove('active'));b.classList.add('active');state.color=b.dataset.color;$('colorLabel').textContent=b.dataset.label;updateTrace()}));
 $('pause').addEventListener('click',()=>{state.paused=!state.paused;$('pause').textContent=state.paused?'Resume animation':'Pause animation'});
 $('reset').addEventListener('click',()=>{camera.position.set(8.8,5.8,13.6);orbit.target.set(2.7,.85,0);orbit.update()});
-const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let activeKnob=null,lastX=0,knobSettling=false;const knobTargets={freq:state.freq,amp:state.amp,phase:state.phase};
-renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);const hits=raycaster.intersectObjects(knobs,true);if(hits.length){let o=hits[0].object;while(o&&!knobs.includes(o))o=o.parent;if(o){activeKnob=o;knobSettling=false;lastX=e.clientX;const c=o.userData.control;knobTargets[c]=state[c];orbit.enabled=false;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='ew-resize'}}});
+const raycaster=new THREE.Raycaster(),pointer=new THREE.Vector2();let activeKnob=null,lastX=0,knobSettling=false,activeSemKnob=null,semLastX=0,pressedMesh=null;const knobTargets={freq:state.freq,amp:state.amp,phase:state.phase};
+renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domElement.getBoundingClientRect();pointer.x=((e.clientX-r.left)/r.width)*2-1;pointer.y=-((e.clientY-r.top)/r.height)*2+1;raycaster.setFromCamera(pointer,camera);
+ const hits=raycaster.intersectObjects(knobs,true);if(hits.length){let o=hits[0].object;while(o&&!knobs.includes(o))o=o.parent;if(o){activeKnob=o;knobSettling=false;lastX=e.clientX;const c=o.userData.control;knobTargets[c]=state[c];orbit.enabled=false;renderer.domElement.setPointerCapture(e.pointerId);renderer.domElement.style.cursor='ew-resize';return}}
+ const controls=raycaster.intersectObjects([...scopeButtons,...semPhysicalControls],false);if(!controls.length)return;const obj=controls[0].object;pressedMesh=obj;obj.userData.pressZ??=obj.position.z;obj.position.z=obj.userData.pressZ-.035;orbit.enabled=false;renderer.domElement.style.cursor='pointer';renderer.domElement.setPointerCapture(e.pointerId);
+ if(obj.userData.scopeAction==='pause')$('pause').click();
+ else if(obj.userData.scopeAction==='reset')$('reset').click();
+ else if(obj.userData.scopeAction==='mode'){const modes=['lissajous','sine','circle','spiral','triangle','square'];const select=$('mode');select.value=modes[(modes.indexOf(select.value)+1)%modes.length];select.dispatchEvent(new Event('change'))}
+ if(obj.userData.semAction==='rescan')$('semRescan').click();
+ if(obj.userData.semAction==='pause')$('semPause').click();
+ if(obj.userData.semAction==='detector'){const s=$('semDetector');s.value=s.value==='se'?'bse':s.value==='bse'?'color':'se';s.dispatchEvent(new Event('change'))}
+ if(obj.userData.semAction==='sample'){const s=$('semSample');s.value=s.value==='outer'?'inner':s.value==='inner'?'cross':'outer';s.dispatchEvent(new Event('change'))}
+ if(obj.userData.semControl){activeSemKnob=obj;semLastX=e.clientX}
+});
+renderer.domElement.addEventListener('pointermove',e=>{if(!activeSemKnob)return;const dx=e.clientX-semLastX;semLastX=e.clientX;if(Math.abs(dx)<1)return;const k=activeSemKnob.userData.semControl;const id=k==='mag'?'semMag':k==='focus'?'semFocus':'semBright';const input=$(id);const scale=k==='mag'?.025:.7;input.value=String(Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)+dx*scale)));input.dispatchEvent(new Event('input'))});
 renderer.domElement.addEventListener('pointermove',e=>{if(!activeKnob)return;const dx=e.clientX-lastX;lastX=e.clientX;const c=activeKnob.userData.control;const el=$(c);const sensitivity=c==='freq'?.22:c==='amp'?.0022:.55;const target=knobTargets[c]+dx*sensitivity;knobTargets[c]=Math.max(Number(el.min),Math.min(Number(el.max),target));});
-function endDrag(){if(activeKnob){knobSettling=true;activeKnob=null}orbit.enabled=true;renderer.domElement.style.cursor=''}renderer.domElement.addEventListener('pointerup',endDrag);renderer.domElement.addEventListener('pointercancel',endDrag);
+function endDrag(){if(activeKnob){knobSettling=true;activeKnob=null}if(pressedMesh){pressedMesh.position.z=pressedMesh.userData.pressZ;pressedMesh=null}activeSemKnob=null;orbit.enabled=true;renderer.domElement.style.cursor=''}renderer.domElement.addEventListener('pointerup',endDrag);renderer.domElement.addEventListener('pointercancel',endDrag);
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}window.addEventListener('resize',resize);resize();updateUI();
 function animate(now){requestAnimationFrame(animate);if(activeKnob||knobSettling){const c=(activeKnob||knobs.find(k=>k.userData.control&&Math.abs(state[k.userData.control]-knobTargets[k.userData.control])>0.0001))?.userData.control;if(c){const diff=knobTargets[c]-state[c];const minStep=c==='freq'?.015:c==='amp'?.00015:.035;if(Math.abs(diff)<minStep){state[c]=knobTargets[c];if(!activeKnob)knobSettling=false}else state[c]+=diff*.14;$(c).value=String(state[c]);updateUI()}else knobSettling=false}else if(!state.paused)updateTrace(now/1000);orbit.update();renderer.render(scene,camera)}requestAnimationFrame(animate);$('status').textContent='● INTERACTIVE 3D MESH READY';
 function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
@@ -273,14 +295,23 @@ function drawSem(){
    if(semState.detector==='bse'){ctx.fillStyle='rgba(195,205,184,.17)';ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='screen';ctx.fillStyle='#c4d0c0';ctx.globalAlpha=.08;ctx.fillRect(0,0,w,h);ctx.globalCompositeOperation='source-over';ctx.globalAlpha=1}
    if(semState.detector==='color'){const grad=ctx.createLinearGradient(0,0,w,h);grad.addColorStop(0,'rgba(100,255,140,.22)');grad.addColorStop(.5,'rgba(80,170,255,.15)');grad.addColorStop(1,'rgba(255,180,70,.25)');ctx.fillStyle=grad;ctx.fillRect(0,0,w,h)}
  }else{
-   ctx.fillStyle='#101811';ctx.fillRect(0,0,w,h);ctx.strokeStyle='#71866e';ctx.lineWidth=2;
-   for(let i=0;i<13;i++){const x=(i*89+semState.frame*13)%w,y=(i*47)%h;ctx.beginPath();ctx.ellipse(x,y,25+(i%4)*13,14+(i%3)*9,i*.3,0,Math.PI*2);ctx.stroke()}
-   ctx.fillStyle='#caffaa';ctx.font='22px monospace';ctx.fillText('APPLE CUTICLE MICROGRAPH LOADING',35,55);
+   // Reliable procedural fallback: a grayscale apple-cuticle micrograph texture, so the viewer never stays blank if the remote paper image is blocked.
+   ctx.fillStyle='#151715';ctx.fillRect(0,0,w,h);const cellW=42,cellH=34;
+   for(let row=-1;row<h/cellH+1;row++)for(let col=-1;col<w/cellW+1;col++){
+     const x=col*cellW+(row%2)*21+(Math.sin(col*4.3+row*2.1)*7),y=row*cellH+Math.cos(col*1.7-row)*5;
+     const shade=62+Math.floor((Math.sin(col*7.2+row*4.1)+1)*45);ctx.fillStyle='rgb('+shade+','+shade+','+shade+')';ctx.strokeStyle='rgb('+(shade+45)+','+(shade+45)+','+(shade+45)+')';ctx.lineWidth=1.4;
+     ctx.beginPath();ctx.moveTo(x-18,y-10);ctx.lineTo(x-5,y-17);ctx.lineTo(x+16,y-12);ctx.lineTo(x+21,y+2);ctx.lineTo(x+8,y+16);ctx.lineTo(x-12,y+14);ctx.closePath();ctx.fill();ctx.stroke();
+     ctx.fillStyle='#252725';ctx.beginPath();ctx.ellipse(x+3,y+1,4+(col%3),3+(row%3),.4,0,Math.PI*2);ctx.fill();
+   }
+   const vignette=ctx.createRadialGradient(w/2,h/2,60,w/2,h/2,w*.7);vignette.addColorStop(0,'rgba(0,0,0,0)');vignette.addColorStop(1,'rgba(0,0,0,.48)');ctx.fillStyle=vignette;ctx.fillRect(0,0,w,h);
+   ctx.fillStyle='#caffaa';ctx.font='bold 20px monospace';ctx.fillText('APPLE CUTICLE · SIMULATED SEM',24,34);
  }
  if(semState.grain){ctx.globalAlpha=.10;for(let i=0;i<950;i++){const x=(i*137+semState.frame*17)%w,y=(i*71+semState.frame*11)%h;const n=semNoise(x,y);ctx.fillStyle=n>.0?'#f0f5e9':'#030503';ctx.fillRect(x,y,1+(i%2),1+(i%2))}ctx.globalAlpha=1}
  // CRT scan texture and border
  ctx.fillStyle='rgba(0,0,0,.16)';for(let y=2;y<h;y+=5)ctx.fillRect(0,y,w,1);
  ctx.strokeStyle='rgba(186,255,123,.13)';ctx.lineWidth=2;ctx.strokeRect(2,2,w-4,h-4);
+ // Mirror the current scan into the microscope's physical console display.
+ semDisplayCtx.clearRect(0,0,semDisplayCanvas.width,semDisplayCanvas.height);semDisplayCtx.drawImage(semCanvas,0,0,semDisplayCanvas.width,semDisplayCanvas.height);semDisplayTexture.needsUpdate=true;
  ctx.restore();
  const mag=semMagnifications[semState.mag-1];$('semMagnificationReadout').textContent='×'+mag.toLocaleString('en-US');$('semMagVal').textContent='×'+mag.toLocaleString('en-US');
  $('semScaleReadout').textContent=semState.mag<3?'10 μm':semState.mag<5?'2 μm':'500 nm';
