@@ -19,8 +19,19 @@ button,input,select{font:inherit}button{cursor:pointer}
 .wrap{width:min(1180px,100%);margin:auto;padding:24px clamp(14px,3vw,34px) 36px}
 header{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:22px}.brand{display:flex;align-items:center;gap:12px}.mark{width:38px;height:38px;border:1px solid var(--green);border-radius:10px;display:grid;place-items:center;color:var(--green);box-shadow:0 0 24px #aaff7b20;font-size:21px}.eyebrow{font-size:10px;color:var(--green);letter-spacing:.19em;text-transform:uppercase}.brand h1{font-size:clamp(15px,2.5vw,22px);letter-spacing:.07em;margin:4px 0 0;font-weight:650}.live{border:1px solid var(--line);border-radius:999px;padding:8px 11px;color:var(--muted);font-size:10px;display:flex;align-items:center;gap:8px;white-space:nowrap}.dot{height:7px;width:7px;border-radius:50%;background:var(--mint);box-shadow:0 0 10px var(--mint)}
 .intro{display:flex;justify-content:space-between;align-items:end;gap:18px;margin:0 0 20px}.intro h2{font-size:clamp(24px,4.2vw,44px);line-height:1.05;margin:0 0 8px;letter-spacing:-.065em;font-weight:550}.intro p{color:var(--muted);font-size:12px;line-height:1.6;max-width:540px;margin:0}.edition{font-size:10px;color:var(--orange);border:1px solid #ffb66d50;border-radius:7px;padding:9px 10px;white-space:nowrap}
-.lab{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.9fr);gap:16px;align-items:stretch}
-.instrument-shell{perspective:1200px;min-width:0}.instrument{position:relative;background:linear-gradient(145deg,#39443b 0%,#202922 28%,#151b17 100%);border:1px solid #526252;border-radius:18px;padding:clamp(14px,2.5vw,25px);box-shadow:inset 1px 1px 0 #ffffff1c,inset -2px -3px 0 #0009,0 26px 60px #0008;transform:rotateX(1deg)}.instrument:before{content:"";position:absolute;inset:5px;border:1px solid #ffffff09;border-radius:14px;pointer-events:none}
+.lab{display:grid;grid-template-columns:minmax(0,1.6fr) minmax(260px,.9fr);gap:16px;align-items:start}
+.instrument-column{min-width:0;display:flex;flex-direction:column;gap:12px}
+.instrument-shell{perspective:1200px;min-width:0}
+.instrument-column>.tuning-card{margin:0}
+.tuning-card .card-title{margin-bottom:10px}
+.knob-help{margin-bottom:10px}
+.knob-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:10px}
+.knob-control{padding:10px 3px 8px}
+.rotary-knob{width:68px;height:68px}
+.knob-cap{width:54px;height:54px}
+.knob-pointer{height:13px;top:4px}
+.knob-value{margin-top:9px;font-size:11px}
+.knob-scale{font-size:8px;gap:4px}.instrument{position:relative;background:linear-gradient(145deg,#39443b 0%,#202922 28%,#151b17 100%);border:1px solid #526252;border-radius:18px;padding:clamp(14px,2.5vw,25px);box-shadow:inset 1px 1px 0 #ffffff1c,inset -2px -3px 0 #0009,0 26px 60px #0008;transform:rotateX(1deg)}.instrument:before{content:"";position:absolute;inset:5px;border:1px solid #ffffff09;border-radius:14px;pointer-events:none}
 .instrument-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:17px}.model{font-size:10px;letter-spacing:.17em;color:#aab7a7}.power{border:1px solid #617263;border-radius:8px;background:#131a15;color:var(--green);padding:8px 10px;font-size:10px;display:flex;align-items:center;gap:8px}.power:before{content:"";height:7px;width:7px;border-radius:50%;background:var(--green);box-shadow:0 0 10px var(--green)}.power.off:before{background:#536054;box-shadow:none}.power.off{color:#7e897e}
 .screen-frame{background:linear-gradient(145deg,#080d09,#18221a);border-radius:13px;padding:clamp(8px,1.5vw,14px);border:1px solid #050806;box-shadow:inset 0 2px 7px #000,0 1px 0 #ffffff15;position:relative}.screen-label{display:flex;justify-content:space-between;color:#849787;font-size:9px;letter-spacing:.13em;margin:0 3px 9px}.screen{height:clamp(220px,34vw,390px);min-height:210px;position:relative;overflow:hidden;border:1px solid #50684d;border-radius:7px;background:#071009;box-shadow:inset 0 0 35px #55ff7520,inset 0 0 5px #6dff7b30}.screen canvas{width:100%;height:100%;display:block}.screen:after{content:"";position:absolute;inset:0;pointer-events:none;background:linear-gradient(110deg,#ffffff08,transparent 24%,transparent 80%,#b9ff7a04),repeating-linear-gradient(0deg,transparent 0 3px,#00000012 4px);border-radius:7px}.screen-off{position:absolute;inset:0;display:none;place-items:center;color:#526353;letter-spacing:.2em;font-size:12px;background:#050806}.screen-off.show{display:grid}
 .instrument-bottom{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-top:15px;flex-wrap:wrap}.brand-stamp{font-size:11px;letter-spacing:.16em;color:#d6ddcd}.brand-stamp span{color:var(--green)}.readout{font-size:10px;color:var(--green);text-align:right}
@@ -48,8 +59,8 @@ header{display:flex;align-items:center;justify-content:space-between;gap:14px;ma
 .color-row{display:flex;gap:8px}.swatch{width:29px;height:29px;border:2px solid transparent;border-radius:50%;background:var(--sw);box-shadow:inset 0 0 0 4px #172019;outline:1px solid #4a584a}.swatch.active{outline:2px solid var(--sw);border-color:#172019;box-shadow:0 0 14px color-mix(in srgb,var(--sw) 35%,transparent)}
 .audio-file{display:block;width:100%;min-width:0;color:#aebbad;font-size:10px;background:#111713;border:1px dashed #465848;border-radius:8px;padding:9px}.audio-file::file-selector-button{background:#28352b;border:1px solid #465848;border-radius:6px;color:#dce5d8;padding:7px 9px;margin-right:8px;font:inherit}.mix-row{display:grid;grid-template-columns:minmax(0,1fr) 58px;gap:10px;align-items:center}.mix-row .range{min-width:0}.audio-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#8d9c8e;font-size:9px;margin-top:5px}.audio-status{font-size:10px;color:var(--mint);line-height:1.5;margin:10px 0 0}.actions{display:grid;grid-template-columns:1fr 1fr;gap:8px}.action{background:#28352b;border:1px solid #465848;border-radius:8px;color:#dce5d8;padding:11px 9px;font-size:10px}.action.primary{background:var(--green);border-color:var(--green);color:#111a12;font-weight:700}.action:hover{filter:brightness(1.12)}.hint{font-size:10px;color:#7e8d7e;line-height:1.6;margin:11px 1px 0}
 footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;color:#647366;font-size:9px;letter-spacing:.08em}.foot-status{color:var(--green)}
-@media(max-width:760px){.wrap{padding-top:17px}.intro{align-items:start;flex-direction:column}.edition{display:none}.lab{grid-template-columns:1fr}.controls{display:grid;grid-template-columns:1fr 1fr;align-items:start}.controls .card:first-child{grid-column:1/-1}.screen{height:clamp(215px,58vw,340px)}.instrument{padding:14px}.instrument-top{margin-bottom:12px}.card{padding:13px}.brand h1{font-size:15px}}
-@media(max-width:420px){.controls{grid-template-columns:1fr}.controls .card:first-child{grid-column:auto}.live{font-size:9px;padding:7px}.screen{min-height:200px}.mode{padding:10px 2px;font-size:9px}}
+@media(max-width:760px){.wrap{padding-top:17px}.intro{align-items:start;flex-direction:column}.edition{display:none}.lab{grid-template-columns:1fr}.controls{display:grid;grid-template-columns:1fr 1fr;align-items:start}.controls .card{grid-column:1/-1}.screen{height:clamp(215px,58vw,340px)}.instrument{padding:14px}.instrument-top{margin-bottom:12px}.card{padding:13px}.brand h1{font-size:15px}.knob-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:6px}.rotary-knob{width:clamp(54px,10vw,68px);height:clamp(54px,10vw,68px)}.knob-cap{width:calc(clamp(54px,10vw,68px) - 12px);height:calc(clamp(54px,10vw,68px) - 12px)}.knob-control{padding:8px 2px}.knob-label{font-size:10px}.knob-scale{font-size:8px}}
+@media(max-width:420px){.controls{grid-template-columns:1fr}.controls .card{grid-column:auto}.live{font-size:9px;padding:7px}.screen{min-height:200px}.mode{padding:10px 2px;font-size:9px}.knob-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.rotary-knob{width:70px;height:70px}.knob-cap{width:58px;height:58px}.knob-label{font-size:11px}.knob-value{font-size:12px}.knob-scale{font-size:9px}}
 /* RESPONSIVE LAYOUT: keep the CRT first, then put the most playful controls near the top. */
 .preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin:12px 0}
 .preset-button,.live-button{position:relative;overflow:hidden;min-height:46px;border:1px solid #6ca86c66;border-radius:12px;padding:12px;color:#dfffd7;background:linear-gradient(160deg,#233b2b,#0b160f 72%);box-shadow:inset 0 1px 0 #ffffff18,0 4px 0 #030905,0 7px 16px #0008;text-align:left;font:inherit;font-weight:650;cursor:pointer;transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease}
@@ -68,16 +79,14 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
  .lab{grid-template-columns:minmax(0,1fr);gap:14px}
  .instrument{transform:none;padding:clamp(12px,2.4vw,20px);border-radius:16px}
  .screen{height:clamp(250px,45vw,420px);min-height:230px}
+ .instrument-column{gap:10px}
+ .knob-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:8px}
+ .rotary-knob{width:72px;height:72px}
+ .knob-cap{width:58px;height:58px}
  .controls{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}
  .controls>.card{min-width:0}
- .controls>.card:nth-child(4),.controls>.card:nth-child(5),.controls>.card:nth-child(3),.controls>.card:nth-child(6),.controls>.card:nth-child(7){grid-column:1/-1}
- .controls>.card:nth-child(4){order:1}
- .controls>.card:nth-child(5){order:2}
- .controls>.card:nth-child(3){order:3}
- .controls>.card:nth-child(6){order:4}
- .controls>.card:nth-child(1){order:5}
- .controls>.card:nth-child(2){order:6}
- .controls>.card:nth-child(7){order:7}
+ .controls>.card:nth-child(n+2){grid-column:1/-1}
+ .controls>.card:nth-child(1){grid-column:1/-1}
  .card{padding:clamp(14px,2vw,19px);border-radius:14px}
  .mode{min-height:44px;padding:11px 6px;font-size:11px}
  .range{height:6px}
@@ -134,14 +143,11 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 <section class="intro"><div><h2>Shape the signal.</h2><p>A little analog soul, a lot of glowing math. Tune the controls and explore the patterns an oscilloscope can draw.</p></div><div class="edition">VECTOR LAB / VERSION 2.0</div></section>
 <!-- Main interactive lab: the canvas is the instrument screen; controls update its signal state. -->
 <main class="lab">
-<div class="instrument-shell"><section class="instrument" aria-label="Interactive oscilloscope instrument">
+<div class="instrument-column"><div class="instrument-shell"><section class="instrument" aria-label="Interactive oscilloscope instrument">
 <div class="instrument-top"><div class="model">V-03 / VECTOR DISPLAY</div><button class="power" id="powerBtn" aria-pressed="true">POWER ON</button></div>
 <div class="screen-frame"><div class="screen-label"><span>CH A · XY MODE</span><span id="screenHz">60.0 HZ</span></div><div class="screen" id="screen"><canvas id="trace" aria-label="Animated oscilloscope waveform"></canvas><div class="screen-off" id="screenOff">DISPLAY STANDBY</div></div></div>
 <div class="instrument-bottom"><div class="brand-stamp">VECTOR<span> / </span>LAB</div><div class="readout" id="readout">A: 1.00 V &nbsp; PH: 0°</div></div>
-</section></div>
-<aside class="controls">
-<section class="card"><div class="card-title"><strong>Signal mode</strong><span>01 / 05</span></div><div class="mode-grid" id="modes"><button class="mode active" data-mode="lissajous">Lissajous</button><button class="mode" data-mode="sine">Sine wave</button><button class="mode" data-mode="circle">Orbit</button><button class="mode" data-mode="triangle">Triangle</button><button class="mode" data-mode="square">Square</button><button class="mode" data-mode="spiral">Spiral</button><button class="mode" data-mode="audioxy">Audio XY</button></div></section>
-<section class="card tuning-card"><div class="card-title"><strong>Rotary signal controls</strong><span>02 / 05</span></div>
+</section></div><section class="card tuning-card"><div class="card-title"><strong>Rotary signal controls</strong><span>02 / 05</span></div>
 <p class="knob-help">Turn the knobs to tune the trace. Drag up/down, swipe around, or use the arrow keys. Each click has a tiny tactile tick.</p>
 <div class="knob-grid">
 <div class="knob-control"><div class="knob-label">Frequency</div><button class="rotary-knob" id="freq" type="button" role="slider" aria-label="Frequency" aria-valuemin="5" aria-valuemax="120" aria-valuenow="60" data-min="5" data-max="120" data-step="0.5" data-value="60" data-color="blue"><span class="knob-cap"><span class="knob-pointer"></span></span></button><output class="knob-value" id="freqOut">60.0 Hz</output><div class="knob-scale"><span>5 Hz</span><span>120 Hz</span></div></div>
@@ -149,7 +155,10 @@ button:focus-visible,input:focus-visible,select:focus-visible{outline:2px solid 
 <div class="knob-control"><div class="knob-label">Phase shift</div><button class="rotary-knob" id="phase" type="button" role="slider" aria-label="Phase shift" aria-valuemin="0" aria-valuemax="360" aria-valuenow="90" data-min="0" data-max="360" data-step="1" data-value="90" data-color="magenta"><span class="knob-cap"><span class="knob-pointer"></span></span></button><output class="knob-value" id="phaseOut">90°</output><div class="knob-scale"><span>0°</span><span>360°</span></div></div>
 <div class="knob-control"><div class="knob-label">Trace glow</div><button class="rotary-knob" id="glow" type="button" role="slider" aria-label="Trace glow" aria-valuemin="0" aria-valuemax="100" aria-valuenow="70" data-min="0" data-max="100" data-step="1" data-value="70" data-color="green"><span class="knob-cap"><span class="knob-pointer"></span></span></button><output class="knob-value" id="glowOut">70%</output><div class="knob-scale"><span>Soft</span><span>Bright</span></div></div>
 </div>
-</section>
+</section></div>
+<aside class="controls">
+<section class="card"><div class="card-title"><strong>Signal mode</strong><span>01 / 05</span></div><div class="mode-grid" id="modes"><button class="mode active" data-mode="lissajous">Lissajous</button><button class="mode" data-mode="sine">Sine wave</button><button class="mode" data-mode="circle">Orbit</button><button class="mode" data-mode="triangle">Triangle</button><button class="mode" data-mode="square">Square</button><button class="mode" data-mode="spiral">Spiral</button><button class="mode" data-mode="audioxy">Audio XY</button></div></section>
+
 <section class="card"><div class="card-title"><strong>Audio art studio</strong><span>03 / 05</span></div>
 <p class="hint" style="margin-top:0">Upload one or two audio files. In XY mode, the left channel draws horizontal movement and the right channel draws vertical movement. Mix two tracks to experiment with new shapes.</p>
 <div class="control"><div class="control-head"><label for="audioA">Sound layer A</label></div><input class="audio-file" id="audioA" type="file" accept="audio/*"><span class="audio-name" id="audioAName">No file selected</span></div>
