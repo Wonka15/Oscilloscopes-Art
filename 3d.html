@@ -465,8 +465,8 @@ const shaft=box(root,'Screwdriver shaft',[2.55,-.06,-1.2],[.045,.045,.45],edge);
 let audioAnalyser=null,audioData=null,audioCtx=null,audioElement=null,audioSource=null,audioObjectUrl=null;
 // Separate microphone input can analyse radio audio from the room if direct stream access is blocked.
 let micCtx=null,micAnalyser=null,micData=null,micStream=null,micSource=null;
-async /** Connect a user-selected audio element to Web Audio analysis when browser permissions allow it. */
-function connectAudioElement(el){
+/** Connect a user-selected audio element to Web Audio analysis when browser permissions allow it. */
+async function connectAudioElement(el){
   try{
     if(audioCtx){try{await audioCtx.close()}catch{}}
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
@@ -582,8 +582,8 @@ function animate(now){requestAnimationFrame(animate);if(document.hidden)return;i
 /** Export a generated file by creating a temporary browser download link. */
 function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
 $('glb').addEventListener('click',async()=>{try{$('glb').disabled=true;$('status').textContent='● BUILDING GLB MESH…';const ex=new GLTFExporter();const data=await ex.parseAsync(root,{binary:true,onlyVisible:true});download(new Blob([data],{type:'model/gltf-binary'}),'oscilloscopes-art-v03.glb');$('status').textContent='● GLB EXPORTED'}catch(e){console.error(e);$('status').textContent='Export failed — try again'}finally{$('glb').disabled=false}});
-async /** Prepare an Apple Quick Look-compatible USDZ export when the browser supports it. */
-function makeUSDZ(){const exporter=new USDZExporter();return await exporter.parseAsync(root,{ar:true})}
+/** Prepare an Apple Quick Look-compatible USDZ export when the browser supports it. */
+async function makeUSDZ(){const exporter=new USDZExporter();return await exporter.parseAsync(root,{ar:true})}
 $('usdz').addEventListener('click',async()=>{try{$('usdz').disabled=true;$('status').textContent='● PACKING USDZ MODEL…';const data=await makeUSDZ();download(new Blob([data],{type:'model/vnd.usdz+zip'}),'oscilloscopes-art-v03.usdz');$('status').textContent='● USDZ EXPORTED — OPEN FILE FOR AR'}catch(e){console.error(e);$('status').textContent='USDZ export unavailable in this browser'}finally{$('usdz').disabled=false}});
 $('ar').addEventListener('click',async()=>{try{if(navigator.xr&&await navigator.xr.isSessionSupported('immersive-ar')){const session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['local']});renderer.xr.enabled=true;renderer.xr.setSession(session);$('status').textContent='● AR SESSION ACTIVE';session.addEventListener('end',()=>{$('status').textContent='● AR SESSION ENDED'})}else{ $('status').textContent='● PREPARING AR FILE…';const data=await makeUSDZ();const blob=new Blob([data],{type:'model/vnd.usdz+zip'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.setAttribute('rel','ar');a.href=url;a.style.display='none';const img=document.createElement('img');img.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';a.appendChild(img);document.body.appendChild(a);a.click();$('status').textContent='● IF QUICK LOOK DID NOT OPEN, USE EXPORT USDZ';setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000)}}catch(e){console.error(e);$('status').textContent='AR not available here — export USDZ to try on iPad'}});
 $('png').addEventListener('click',()=>{renderer.render(scene,camera);renderer.domElement.toBlob(b=>{if(b)download(b,'oscilloscopes-art-3d-bench.png')})});
