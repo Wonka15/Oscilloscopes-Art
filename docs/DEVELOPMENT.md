@@ -60,7 +60,8 @@ The Jacob's ladder is a **visual effect only**. No real high voltage is created 
 8. **Understand stereo XY audio.** In Audio XY mode, each stereo sample pair becomes a coordinate: left channel is horizontal (X), right channel is vertical (Y). The Audio Art Studio decodes selected files locally, combines up to two layers using their gain sliders, and builds a stereo buffer for playback and drawing. Ordinary stereo music may create abstract patterns rather than a clear picture; audio made specifically for XY display is more likely to draw a recognizable image.
 9. **Draw-to-sound studio:** each pen-down creates a separate normalized stroke. SVG path elements remain separate strokes. WAV export encodes X in the left channel and Y in the right channel, with zero-valued gaps between strokes. The editor processes files locally.
 10. **Audio playback:** layer gains affect the mixed signal; output volume is a separate Web Audio gain node. Playback status checks whether the mix contains meaningful signal and reports suspended-context failures.
-11. **Do not claim a simulation is real measurement.** The waveform and SEM visuals are for exploration, not calibrated engineering work.
+11. **Live input limitations:** microphone and device-orientation APIs require a secure context and user permission. Direct media-element visualization depends on CORS headers from the stream host. Do not claim that the page can analyze protected YouTube audio directly; the embedded player is visualized only through microphone pickup.
+12. **Do not claim a simulation is real measurement.** The waveform and SEM visuals are for exploration, not calibrated engineering work.
 
 ## Test before you merge
 
