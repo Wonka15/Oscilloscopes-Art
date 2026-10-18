@@ -2,6 +2,8 @@ name: Deploy website to GitHub Pages
 on:
   push:
     branches: [main]
+  pull_request:
+    branches: [main]
   workflow_dispatch:
 permissions:
   contents: read
@@ -24,6 +26,8 @@ jobs:
       - name: Check inline JavaScript and duplicate IDs
         run: node scripts/check-inline-js.mjs
   deploy:
+    # Pull requests run validation but must not publish a deployment.
+    if: github.event_name != 'pull_request'
     needs: check
     environment:
       name: github-pages
