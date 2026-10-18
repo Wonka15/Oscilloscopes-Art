@@ -31,7 +31,7 @@ header{display:flex;align-items:center;justify-content:space-between;gap:14px;ma
 footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-top:18px;color:#647366;font-size:9px;letter-spacing:.08em}.foot-status{color:var(--green)}
 @media(max-width:760px){.wrap{padding-top:17px}.intro{align-items:start;flex-direction:column}.edition{display:none}.lab{grid-template-columns:1fr}.controls{display:grid;grid-template-columns:1fr 1fr;align-items:start}.controls .card:first-child{grid-column:1/-1}.screen{height:clamp(215px,58vw,340px)}.instrument{padding:14px}.instrument-top{margin-bottom:12px}.card{padding:13px}.brand h1{font-size:15px}}
 @media(max-width:420px){.controls{grid-template-columns:1fr}.controls .card:first-child{grid-column:auto}.live{font-size:9px;padding:7px}.screen{min-height:200px}.mode{padding:10px 2px;font-size:9px}}
-</style>
+ .preset-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px;margin:12px 0}.preset-button,.live-button{position:relative;overflow:hidden;border:1px solid #6ca86c66;border-radius:12px;padding:11px 12px;color:#dfffd7;background:linear-gradient(160deg,#233b2b,#0b160f 72%);box-shadow:inset 0 1px 0 #ffffff18,0 4px 0 #030905,0 7px 16px #0008;text-align:left;font:inherit;font-weight:650;cursor:pointer;transition:transform .14s ease,box-shadow .14s ease,border-color .14s ease}.preset-button:before,.live-button:before{content:'';position:absolute;inset:0;background:linear-gradient(120deg,#b8ff7822,transparent 60%);pointer-events:none}.preset-button:active,.live-button:active{transform:translateY(3px);box-shadow:inset 0 1px 0 #ffffff12,0 1px 0 #030905,0 3px 8px #0008}.preset-button.active,.live-button.active{border-color:#b6ff86;box-shadow:0 0 0 1px #aaff7840,0 0 16px #aaff7830,inset 0 1px 0 #ffffff20,0 4px 0 #030905}.preset-button small{display:block;margin-top:3px;color:#9fb69e;font-size:11px;font-weight:450}.live-actions{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.url-row{display:flex;gap:8px;align-items:center}.url-row input{min-width:0;flex:1}@media(max-width:420px){.preset-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.preset-button{padding:10px;font-size:13px}}\n</style>
 </head>
 <body>
 <!-- Page shell: instrument display on the left, accessible controls on the right. -->
@@ -63,7 +63,22 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <div class="actions"><button class="action" id="audioStopBtn" type="button">■ Stop audio</button><button class="action primary" id="audioPlayBtn" type="button">▶ Play mix</button></div>
 <p class="audio-status" id="audioStatus" role="status" aria-live="polite">Choose an audio file to begin. Stereo audio designed for XY display produces the clearest images.</p>
 </section>
-<section class="card"><div class="card-title"><strong>Draw to sound</strong><span>04 / 05</span></div>
+<section class="card"><div class="card-title"><strong>Instant shape sounds</strong><span>04 / 07</span></div>
+<p class="hint" style="margin-top:0">Tap a preset to draw a glowing shape and hear a matching synthesized tone. These are generated in your browser—no downloads needed.</p>
+<div class="preset-grid" id="presetGrid">
+<button class="preset-button" data-preset="heart">♥ Heart<small>Warm, rounded tone</small></button><button class="preset-button" data-preset="flower">✿ Flower<small>Bright, blooming loops</small></button>
+<button class="preset-button" data-preset="star">★ Star<small>Sharp, sparkling tone</small></button><button class="preset-button" data-preset="orbit">◎ Orbit<small>Soft circular pulse</small></button>
+<button class="preset-button" data-preset="butterfly">♧ Butterfly<small>Double-wing motion</small></button><button class="preset-button" data-preset="infinity">∞ Infinity<small>Woven stereo tone</small></button>
+<button class="preset-button" data-preset="spiral">◉ Spiral<small>Rising synth tone</small></button><button class="preset-button" data-preset="diamond">◇ Diamond<small>Clear, bell-like tone</small></button>
+<button class="preset-button" data-preset="wave">〰 Wave<small>Gentle flowing tone</small></button><button class="preset-button" data-preset="lissajous">✧ Lissajous<small>Classic oscilloscope figure</small></button>
+</div><p class="audio-status" id="presetStatus" role="status" aria-live="polite">Choose any shape to see and hear it. Use Stop audio to silence the tone.</p></section>
+<section class="card"><div class="card-title"><strong>Live input lab</strong><span>05 / 07</span></div>
+<p class="hint" style="margin-top:0">Use your iPad microphone, motion sensors, or a direct audio-stream URL. Sensor access requires permission. YouTube's protected player audio cannot be read directly by this visualizer.</p>
+<div class="live-actions"><button class="live-button" id="micBtn" type="button">🎙 Start microphone</button><button class="live-button" id="gyroBtn" type="button">🌀 Enable gyro</button></div>
+<div class="control"><div class="control-head"><label for="radioUrl">Internet radio stream URL</label></div><input class="audio-file" id="radioUrl" type="url" inputmode="url" placeholder="https://station.example/live.mp3"><div class="actions"><button class="action primary" id="radioStartBtn" type="button">▶ Play & visualize</button><button class="action" id="radioStopBtn" type="button">Stop stream</button></div></div>
+<p class="audio-status" id="liveStatus" role="status" aria-live="polite">Microphone, motion, and stream controls are idle. Radio streams need a direct audio URL and may require CORS support from the station.</p>
+</section>
+<section class="card"><div class="card-title"><strong>Draw to sound</strong><span>06 / 07</span></div>
 <p class="hint" style="margin-top:0">Draw with your finger or mouse, or import an SVG containing path shapes. The outline becomes stereo audio: horizontal movement is the left channel and vertical movement is the right.</p>
 <canvas id="drawPad" width="640" height="260" aria-label="Draw a shape to convert into oscilloscope audio" style="display:block;width:100%;height:180px;background:#071009;border:1px solid #465848;border-radius:8px;touch-action:none;cursor:crosshair"></canvas>
 <div class="actions" style="margin-top:9px"><button class="action" id="clearDrawingBtn" type="button">Clear drawing</button><button class="action" id="useDrawingBtn" type="button">Use drawing</button></div>
@@ -71,7 +86,7 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <div class="actions"><button class="action primary" id="downloadWavBtn" type="button">↓ Download WAV</button><button class="action" id="drawHelpBtn" type="button">How it works</button></div>
 <p class="audio-status" id="drawStatus" role="status" aria-live="polite">Draw a continuous line, then choose Use drawing or Download WAV. For SVG import, simple path-based artwork works best.</p>
 </section>
-<section class="card"><div class="card-title"><strong>Display</strong><span>05 / 05</span></div><div class="control"><div class="control-head"><label>Trace phosphor</label><span class="value" id="colorName">Phosphor green</span></div><div class="color-row" id="colors"><button class="swatch active" style="--sw:#aaff78" data-color="#aaff78" data-name="Phosphor green" aria-label="Green trace"></button><button class="swatch" style="--sw:#73f7ff" data-color="#73f7ff" data-name="Ice blue" aria-label="Blue trace"></button><button class="swatch" style="--sw:#ff87dc" data-color="#ff87dc" data-name="Neon pink" aria-label="Pink trace"></button><button class="swatch" style="--sw:#ffc36e" data-color="#ffc36e" data-name="Amber" aria-label="Amber trace"></button></div></div><div class="actions"><button class="action" id="pauseBtn">Ⅱ &nbsp; Pause trace</button><button class="action primary" id="saveBtn">↓ &nbsp; Save screen</button></div><p class="hint">Tip: change phase in Lissajous mode to morph the geometry. Save screen exports the current display as a PNG.</p></section>
+<section class="card"><div class="card-title"><strong>Display</strong><span>07 / 07</span></div><div class="control"><div class="control-head"><label>Trace phosphor</label><span class="value" id="colorName">Phosphor green</span></div><div class="color-row" id="colors"><button class="swatch active" style="--sw:#aaff78" data-color="#aaff78" data-name="Phosphor green" aria-label="Green trace"></button><button class="swatch" style="--sw:#73f7ff" data-color="#73f7ff" data-name="Ice blue" aria-label="Blue trace"></button><button class="swatch" style="--sw:#ff87dc" data-color="#ff87dc" data-name="Neon pink" aria-label="Pink trace"></button><button class="swatch" style="--sw:#ffc36e" data-color="#ffc36e" data-name="Amber" aria-label="Amber trace"></button></div></div><div class="actions"><button class="action" id="pauseBtn">Ⅱ &nbsp; Pause trace</button><button class="action primary" id="saveBtn">↓ &nbsp; Save screen</button></div><p class="hint">Tip: change phase in Lissajous mode to morph the geometry. Save screen exports the current display as a PNG.</p></section>
 </aside>
 </main>
 <footer><span>OSCILLOSCOPES ART · BUILT FOR THE CURIOUS</span><span class="foot-status" id="status">● SIGNAL LOCKED</span><span>WEB SIMULATION · NOT TEST EQUIPMENT</span></footer>
@@ -90,7 +105,7 @@ const canvas=document.getElementById('trace'),ctx=canvas.getContext('2d'),screen
 // Shorthand for looking up a page element by its unique HTML id.
 const $=id=>document.getElementById(id);
 // All interactive values live here. Event handlers update this object; drawing functions read it.
-const state={mode:'lissajous',freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',colorName:'Phosphor green',power:true,paused:false,time:0,last:0,audioContext:null,audioFiles:[null,null],audioGains:[.7,.3],audioBuffer:null,audioSource:null,audioOutputGain:null,audioPlaying:false,drawingPoints:[],drawingStrokes:[],activeDrawingStroke:null,drawPointerDown:false};
+const state={mode:'lissajous',freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',colorName:'Phosphor green',power:true,paused:false,time:0,last:0,audioContext:null,audioFiles:[null,null],audioGains:[.7,.3],audioBuffer:null,audioSource:null,audioOutputGain:null,audioPlaying:false,liveAnalyser:null,liveSource:null,liveStream:null,liveMedia:null,liveMode:'',presetPoints:[],presetOscillators:[],gyroActive:false,gyroBeta:0,gyroGamma:0,drawingPoints:[],drawingStrokes:[],activeDrawingStroke:null,drawPointerDown:false};
 // Audio files are decoded locally in the browser. They are not uploaded to a server.
 let width=0,height=0,dpr=1,raf=0;
 /** Resize the canvas for the current screen size and device pixel ratio to keep the trace crisp. */
@@ -99,6 +114,8 @@ function resize(){const r=screen.getBoundingClientRect();dpr=Math.min(window.dev
 function drawGrid(){ctx.clearRect(0,0,width,height);ctx.fillStyle='#071009';ctx.fillRect(0,0,width,height);ctx.lineWidth=1;ctx.strokeStyle='#4a8b4b28';for(let i=0;i<=10;i++){let x=width*i/10;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,height);ctx.stroke()}for(let i=0;i<=8;i++){let y=height*i/8;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}ctx.strokeStyle='#72b56d55';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(width/2,0);ctx.lineTo(width/2,height);ctx.moveTo(0,height/2);ctx.lineTo(width,height/2);ctx.stroke()}
 /** Calculate [x, y] points for the selected waveform without drawing them yet. */
 function points(t){const pts=[],n=state.mode==='sine'||state.mode==='square'||state.mode==='triangle'?900:1100;const cx=width/2,cy=height/2,rx=width*.43*state.amp,ry=height*.39*state.amp,ph=state.phase*Math.PI/180;
+if(state.mode==='presetxy'&&state.presetPoints.length){for(const p of state.presetPoints)pts.push([cx+p.x*rx,cy-p.y*ry]);return pts}
+if(state.liveAnalyser&&state.liveMode){const count=900,channels=state.liveAnalyser.frequencyBinCount,a=new Uint8Array(channels),b=new Uint8Array(channels);state.liveAnalyser.getByteTimeDomainData(a);for(let i=0;i<count;i++){const ix=Math.floor(i/count*channels),x=(a[ix]-128)/128;let y;if(state.liveMode==='mic'){const lag=Math.max(1,Math.floor(channels*.035));y=(a[(ix+lag)%channels]-128)/128}else if(state.liveMode==='radio'){y=(a[(ix+Math.max(1,Math.floor(channels*.02)))%channels]-128)/128}else y=(state.gyroGamma/45)*.8*Math.sin(i*.018+t)+(state.gyroBeta/45)*.2*Math.cos(i*.031+t);pts.push([cx+x*rx,cy-y*ry])}return pts}
 // A hand-drawn or imported path is displayed using the same XY coordinate system.
 if(state.mode==='drawxy'&&state.drawingStrokes.length){for(const stroke of state.drawingStrokes){if(!stroke.length)continue;pts.push(null);for(const p of stroke)pts.push([cx+(p.x-.5)*2*rx,cy+(p.y-.5)*2*ry])}return pts}
 // In Audio XY mode, stereo samples become points: left = X, right = Y.
@@ -131,7 +148,62 @@ $('outputVolume').addEventListener('input',e=>{const value=Number(e.target.value
 async function playAudioMix(){if(!state.audioBuffer){$('audioStatus').textContent='Load at least one audio file before playing.';return}try{const context=await ensureAudioContext();stopAudio();const source=context.createBufferSource();source.buffer=state.audioBuffer;source.connect(state.audioOutputGain||context.destination);source.onended=()=>{if(state.audioSource===source){state.audioSource=null;state.audioPlaying=false;$('audioPlayBtn').textContent='▶ Play mix'}};state.audioSource=source;state.audioPlaying=true;source.start();$('audioPlayBtn').textContent='▶ Restart mix';const left=state.audioBuffer.getChannelData(0),right=state.audioBuffer.getChannelData(1);let peak=0;for(let i=0;i<state.audioBuffer.length;i+=Math.max(1,Math.floor(state.audioBuffer.length/2000)))peak=Math.max(peak,Math.abs(left[i]),Math.abs(right[i]));$('audioStatus').textContent=peak<0.0001?'Playback started, but this mix appears silent. Raise the layer volumes or choose another file.':'Playing locally · '+state.audioBuffer.duration.toFixed(1)+' seconds · output '+$('outputVolume').value+'%. If silent on iPad, raise device volume and turn off Silent Mode.'}catch(error){console.error('Audio playback failed:',error);$('audioStatus').textContent='Playback was blocked by the browser. Tap Play mix again to allow audio.'}}
 $('audioPlayBtn').addEventListener('click',playAudioMix);$('audioStopBtn').addEventListener('click',()=>{stopAudio();$('audioStatus').textContent='Audio stopped. Your loaded tracks are still ready to mix.'});
 
-// DRAW-TO-SOUND STUDIO
+
+// Built-in shapes are sampled as normalized paths; a small synth tone makes each preset audible.
+function makePreset(name){
+ const path=[],N=1400;
+ for(let i=0;i<N;i++){const t=i/N*Math.PI*2;let x=0,y=0;
+ switch(name){
+ case'heart':x=16*Math.pow(Math.sin(t),3)/18;y=(13*Math.cos(t)-5*Math.cos(2*t)-2*Math.cos(3*t)-Math.cos(4*t))/18;break;
+ case'flower':{const r=.25+.7*Math.cos(5*t);x=r*Math.cos(t);y=r*Math.sin(t);break}
+ case'star':{const r=i%Math.floor(N/10)<Math.floor(N/20)?1:.45;x=r*Math.cos(t);y=r*Math.sin(t);break}
+ case'orbit':x=Math.cos(t);y=.72*Math.sin(t);break;
+ case'butterfly':x=Math.sin(t)*(Math.exp(Math.cos(t))-2*Math.cos(4*t)-Math.pow(Math.sin(t/12),5));y=Math.cos(t)*(Math.exp(Math.cos(t))-2*Math.cos(4*t)-Math.pow(Math.sin(t/12),5));break;
+ case'infinity':x=Math.sin(t);y=Math.sin(2*t)*.7;break;
+ case'spiral':{const r=.12+.88*i/N;x=r*Math.cos(3*t);y=r*Math.sin(3*t);break}
+ case'diamond':{const q=(i%Math.floor(N/4))/(N/4);const side=Math.floor(i/(N/4));const corners=[[0,1],[1,0],[0,-1],[-1,0],[0,1]],a=corners[side],b=corners[side+1];x=a[0]+(b[0]-a[0])*q;y=a[1]+(b[1]-a[1])*q;break}
+ case'wave':x=Math.cos(t);y=Math.sin(3*t)*.65;break;
+ default:x=Math.sin(2*t);y=Math.sin(3*t);
+ }path.push({x:x*.88,y:y*.82})}
+ return path;
+}
+function stopPresetTone(){for(const node of state.presetOscillators){try{node.stop()}catch{}try{node.disconnect()}catch{}}state.presetOscillators=[]}
+async function playPreset(name){
+ try{const context=await ensureAudioContext();stopAudio();stopPresetTone();state.presetPoints=makePreset(name);state.mode='presetxy';document.querySelectorAll('.mode').forEach(b=>b.classList.remove('active'));document.querySelectorAll('[data-preset]').forEach(b=>b.classList.toggle('active',b.dataset.preset===name));
+ const frequencies={heart:220,flower:330,star:660,orbit:196,butterfly:440,infinity:277,spiral:392,diamond:880,wave:247,lissajous:523},frequency=frequencies[name]||330;
+ for(const [mult,gain] of [[1,.12],[2,.035]]){const osc=context.createOscillator(),amp=context.createGain();osc.type=mult===1?'sine':'triangle';osc.frequency.value=frequency*mult;amp.gain.value=0;amp.gain.setTargetAtTime(gain,context.currentTime,.025);osc.connect(amp);amp.connect(state.audioOutputGain||context.destination);osc.start();state.presetOscillators.push(osc,amp)}
+ $('presetStatus').textContent='Playing '+name+' · shape drawn in the CRT · tap another preset to change it.';$('status').textContent='● '+name.toUpperCase()+' PRESET';
+ }catch(error){$('presetStatus').textContent='Could not start preset audio. Tap again and check browser audio permissions.';console.error(error)}
+}
+$('presetGrid').addEventListener('click',event=>{const button=event.target.closest('[data-preset]');if(button)playPreset(button.dataset.preset)});
+async function stopLiveInput(){
+ if(state.liveSource){try{state.liveSource.disconnect()}catch{}state.liveSource=null}
+ if(state.liveStream){state.liveStream.getTracks().forEach(track=>track.stop());state.liveStream=null}
+ if(state.liveMedia){state.liveMedia.pause();state.liveMedia.src='';state.liveMedia=null}
+ state.liveAnalyser=null;state.liveMode='';
+ $('micBtn').classList.remove('active');$('gyroBtn').classList.remove('active');$('radioStartBtn').classList.remove('active');
+}
+async function startMicrophone(){
+ try{await stopLiveInput();const context=await ensureAudioContext(),stream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:false}});state.liveStream=stream;state.liveSource=context.createMediaStreamSource(stream);state.liveAnalyser=context.createAnalyser();state.liveAnalyser.fftSize=2048;state.liveSource.connect(state.liveAnalyser);state.liveMode='mic';state.mode='livexy';$('micBtn').classList.add('active');$('liveStatus').textContent='Microphone live. Speak, hum, or play sound near your iPad. Audio stays in this browser.';$('status').textContent='● MICROPHONE XY MODE';
+ }catch(error){$('liveStatus').textContent=error.name==='NotAllowedError'?'Microphone permission was denied. Allow microphone access in Safari settings and try again.':'Could not start microphone: '+error.message}
+}
+$('micBtn').addEventListener('click',()=>{if(state.liveMode==='mic'){stopLiveInput();$('liveStatus').textContent='Microphone stopped.'}else startMicrophone()});
+async function startRadio(){
+ const url=$('radioUrl').value.trim();if(!url){$('liveStatus').textContent='Paste a direct internet radio audio-stream URL first. A station web-page URL is not enough.';return}
+ try{await stopLiveInput();const context=await ensureAudioContext(),media=new Audio();media.crossOrigin='anonymous';media.src=url;media.loop=false;const source=context.createMediaElementSource(media),analyser=context.createAnalyser();analyser.fftSize=2048;source.connect(analyser);analyser.connect(state.audioOutputGain||context.destination);state.liveMedia=media;state.liveSource=source;state.liveAnalyser=analyser;state.liveMode='radio';await media.play();$('radioStartBtn').classList.add('active');$('liveStatus').textContent='Radio playing. If the station blocks cross-origin audio analysis, the browser may refuse visualization; try another direct stream URL.';$('status').textContent='● LIVE RADIO XY MODE'
+ }catch(error){await stopLiveInput();$('liveStatus').textContent='Could not play or analyze this stream. Use a direct HTTPS audio URL; some stations block browser visualization with CORS.'}
+}
+$('radioStartBtn').addEventListener('click',startRadio);$('radioStopBtn').addEventListener('click',async()=>{await stopLiveInput();$('liveStatus').textContent='Radio stopped.'});
+// iOS requires a user gesture to request motion permission. Gyro changes the live trace geometry.
+$('gyroBtn').addEventListener('click',async()=>{
+ try{if(state.gyroActive){state.gyroActive=false;window.removeEventListener('deviceorientation',handleOrientation);$('gyroBtn').classList.remove('active');$('liveStatus').textContent='Motion control disabled.';return}
+ if(typeof DeviceOrientationEvent==='undefined')throw new Error('This device does not expose orientation sensors.');
+ if(typeof DeviceOrientationEvent.requestPermission==='function'){const permission=await DeviceOrientationEvent.requestPermission();if(permission!=='granted')throw new Error('Motion permission was not granted.')}
+ state.gyroActive=true;window.addEventListener('deviceorientation',handleOrientation);$('gyroBtn').classList.add('active');state.liveMode='gyro';state.mode='livexy';$('liveStatus').textContent='Tilt your iPad gently to bend the live shape. Motion values stay on this device.';$('status').textContent='● GYROSCOPE XY MODE';
+ }catch(error){$('liveStatus').textContent='Motion control unavailable: '+error.message}
+});
+function handleOrientation(event){state.gyroBeta=Number(event.beta)||0;state.gyroGamma=Number(event.gamma)||0}
+\n// DRAW-TO-SOUND STUDIO
 // The pad stores points in normalized 0..1 coordinates so it works on any screen size.
 const drawPad=$('drawPad'),drawCtx=drawPad.getContext('2d');
 function paintDrawingPad(){
