@@ -20,6 +20,8 @@ Oscilloscopes Art is a hands-on visual lab by [Wonka15](https://github.com/Wonka
 - Choose between four phosphor colors.
 - Pause or power down the display.
 - Save the current canvas as a PNG image.
+- Upload one or two local audio files and mix them with independent layer-volume controls.
+- Play the local mix and switch to **Audio XY** mode, which maps the stereo left channel to horizontal position and the right channel to vertical position.
 - Use the responsive layout on desktop, tablet, and phone.
 
 ### 3D Bench
@@ -32,7 +34,7 @@ Oscilloscopes Art is a hands-on visual lab by [Wonka15](https://github.com/Wonka
 - Toggle the **visual-only** Jacob's ladder effect.
 - Export a GLB or USDZ model, save a scene image, and try AR-related options where supported by the browser and device.
 
-Audio and AR behavior depends on browser security rules, device support, permissions, and whether an external stream allows analysis. The site does not upload microphone audio.
+Audio and AR behavior depends on browser security rules, device support, permissions, and whether an external stream allows analysis. The 2D audio studio decodes selected files locally in the browser; it does not upload those files to a server. Ordinary music is not guaranteed to form recognizable pictures in XY mode—audio specifically authored for oscilloscope/vector display usually gives the clearest results. The 3D page does not upload microphone audio.
 
 ## Project layout
 
