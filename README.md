@@ -22,6 +22,8 @@ Oscilloscopes Art is a hands-on visual lab by [Wonka15](https://github.com/Wonka
 - Save the current canvas as a PNG image.
 - Upload one or two local audio files and mix them with independent layer-volume controls.
 - Play the local mix and switch to **Audio XY** mode, which maps the stereo left channel to horizontal position and the right channel to vertical position.
+- Draw a path with touch or mouse and view it immediately on the oscilloscope.
+- Import simple SVG artwork made from path elements, then export the path as a stereo PCM WAV file that encodes X/Y movement.
 - Use the responsive layout on desktop, tablet, and phone.
 
 ### 3D Bench
