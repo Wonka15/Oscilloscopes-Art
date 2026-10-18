@@ -13,6 +13,16 @@
 .sem-lab{margin-top:16px;border:1px solid #3b4b3e;border-radius:16px;padding:16px;background:linear-gradient(145deg,#202922,#131a15);box-shadow:0 18px 55px #0005}
 .sem-lab-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.sem-lab-head h2{font-size:clamp(16px,2.5vw,22px);margin:5px 0}.sem-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,.72fr);gap:14px;align-items:start}.sem-screen{min-height:500px;height:clamp(500px,54vw,720px);position:relative;overflow:hidden;border:1px solid #526052;border-radius:10px;background:#050806;box-shadow:inset 0 0 35px #8dff7b12,0 0 0 1px #000}.sem-screen canvas{display:block;width:100%;height:100%;min-height:500px;object-fit:fill}.sem-screen-top,.sem-screen-bottom{position:absolute;left:12px;right:12px;display:flex;justify-content:space-between;gap:10px;color:#caffaa;font-size:10px;text-shadow:0 1px 4px #000;background:#071008a8;padding:8px;border-radius:5px;pointer-events:none}.sem-screen-top{top:10px}.sem-screen-bottom{bottom:10px}.sem-sample-control{grid-column:1/-1}.sem-sample-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sem-sample-btn{border:1px solid #394b3b;background:#121a14;color:#b5c4b2;border-radius:7px;padding:9px 6px;font:10px ui-monospace,monospace;text-align:left;min-height:36px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}.sem-sample-btn:hover{border-color:#8bbd72;color:#efffe5}.sem-sample-btn.active{background:#baff7b;color:#101810;border-color:#baff7b;font-weight:bold}.sem-sample-control #semSample{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.sem-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sem-controls .control{margin:5px 0 10px}.sem-controls select{width:100%;text-align:left}.sem-statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.sem-stat{padding:10px;border:1px solid #344537;border-radius:7px;background:#101711}.sem-stat span{display:block;font-size:9px;color:#8fa28e;margin-bottom:6px}.sem-stat b{color:#caffaa;font-size:13px;font-weight:500}.sem-scanline{height:2px;position:absolute;left:0;right:0;top:0;background:#caffaa;opacity:.75;box-shadow:0 0 14px #aaff78;pointer-events:none}.sem-disclaimer{color:#a7b5a5;font-size:10px;line-height:1.65;margin:12px 0 0}.sem-source{color:#baff7b;text-decoration:none}.sem-toggle{display:flex;align-items:center;gap:8px;font-size:10px;color:#a7b5a5;margin-top:8px}.sem-toggle input{accent-color:#baff7b}@media(max-width:850px){.sem-grid{grid-template-columns:1fr}.sem-screen{height:clamp(420px,72vw,620px);min-height:420px}.sem-screen canvas{min-height:420px}.sem-controls{grid-template-columns:1fr 1fr}}@media(max-width:520px){.sem-lab{padding:11px}.sem-screen{height:420px;min-height:420px}.sem-screen canvas{min-height:420px}.sem-controls{grid-template-columns:1fr 1fr}.sem-lab-head{display:block}}
 
+/* Improve on-machine label contrast and small-screen overlay alignment. */
+.power-overlay{max-width:min(260px,calc(100% - 28px));white-space:normal;line-height:1.35;font-size:12px;padding:11px 13px}
+.power-caption{max-width:min(300px,calc(100% - 28px));white-space:normal;line-height:1.45;font-size:12px}
+.badge,.stage-hint{font-size:11px;line-height:1.45;max-width:calc(100% - 28px)}
+.sem-screen-top,.sem-screen-bottom{align-items:center;flex-wrap:wrap;font-size:clamp(10px,1.1vw,13px);line-height:1.4}
+.note,.sem-disclaimer{font-size:12px;line-height:1.65}
+.row,.control .row{font-size:12px;line-height:1.45}
+.btn,.sem-sample-btn{font-size:12px;line-height:1.35}
+@media(max-width:520px){.power-overlay{top:54px;right:9px;min-width:0;width:calc(100% - 18px);max-width:220px}.power-caption{top:auto;bottom:54px;right:9px;max-width:220px}.badge{max-width:calc(100% - 20px);left:10px;top:10px}.stage-hint{max-width:calc(100% - 20px);left:10px;bottom:10px}}
+
 /* iOS-inspired translucent glass polish */
 body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),radial-gradient(ellipse at 92% 18%,#285d72 0%,transparent 36%),linear-gradient(145deg,#17162b,#111321 72%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;letter-spacing:.005em}
 .eyebrow,.val,.status,.back{color:#d8d4ff}
@@ -130,7 +140,7 @@ const dark=mat('#18211b',.35,.62), edge=mat('#526052',.32,.7), rubber=mat('#1014
 const root=new THREE.Group();scene.add(root);
 function box(parent,name,pos,size,material,bevel=0){const g=new THREE.BoxGeometry(...size);const m=new THREE.Mesh(g,material);m.name=name;m.position.set(...pos);parent.add(m);return m}
 function cylinder(parent,name,pos,radius,depth,material,segments=40){const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,depth,segments),material);m.name=name;m.rotation.x=Math.PI/2;m.position.set(...pos);parent.add(m);return m}
-function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){const c=document.createElement('canvas');c.width=1024;c.height=192;const x=c.getContext('2d');x.clearRect(0,0,c.width,c.height);x.font='700 68px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';x.textAlign='center';x.textBaseline='middle';x.fillStyle=color;x.shadowColor='#080b18';x.shadowBlur=8;x.fillText(text,c.width/2,c.height/2,c.width-36);const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;const width=Math.max(size*4,text.length*size*.64);const m=new THREE.Mesh(new THREE.PlaneGeometry(width,size),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false,toneMapped:false}));m.position.set(...pos);parent.add(m);return m}
+function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){\n // High-resolution labels remain crisp when the camera is zoomed in.\n const c=document.createElement('canvas');c.width=2048;c.height=256;const x=c.getContext('2d');\n x.clearRect(0,0,c.width,c.height);x.font='700 132px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';\n x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.strokeStyle='rgba(5,8,14,.96)';x.lineWidth=13;x.strokeText(text,c.width/2,c.height/2,c.width-72);\n x.fillStyle=color;x.shadowColor='#000';x.shadowBlur=5;x.fillText(text,c.width/2,c.height/2,c.width-72);\n const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();\n const width=Math.max(size*2.5,text.length*size*.72);\n const m=new THREE.Mesh(new THREE.PlaneGeometry(width,size),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false,toneMapped:false}));\n m.name='Readable label: '+text;m.position.set(...pos);parent.add(m);return m\n}
 // Workbench and metal legs
 box(root,'Workbench top',[0,-.23,0],[8.8,.22,5.1],wood);
 box(root,'Workbench front edge',[0,-.35,2.48],[8.8,.08,.12],wood2);
@@ -181,6 +191,10 @@ for(let i=0;i<11;i++)box(root,'Microscope bench wood grain',[4.8+i*.5,-.113,0],[
    const base=cylinder(semConsole,'Console control knob '+(i+1),[.10+i*.105,-.10,.265],.032,.04,semShadow,24);base.userData={semControl:['mag','focus','bright'][i],pressZ:base.position.z};semPhysicalControls.push(base);
    const cap=cylinder(semConsole,'Console knob cap '+(i+1),[.10+i*.105,-.10,.289],.020,.012,semSteel,24);cap.userData={semControl:['mag','focus','bright'][i],pressZ:cap.position.z};semPhysicalControls.push(cap);
  }
+ // Legends identify the three physical SEM controls.
+ textLabel(semConsole,'MAG',[.10,-.047,.305],.026,'#ffffff');
+ textLabel(semConsole,'FOCUS',[.205,-.047,.305],.026,'#ffffff');
+ textLabel(semConsole,'BRIGHT',[.31,-.047,.305],.026,'#ffffff');
  for(let i=0;i<4;i++){const key=box(semConsole,'Console function key '+(i+1),[.09+i*.075,-.23,.26],[.045,.035,.02],i===0?semAmber:semShadow);key.userData={semAction:['rescan','pause','detector','sample'][i],pressZ:key.position.z};semPhysicalControls.push(key)}
  box(sem,'Rear vacuum module',[0,1.10,-.72],[.66,.48,.25],semShadow);
  box(sem,'Rear vent panel',[0,1.12,-.855],[.48,.30,.025],semBlack);
@@ -205,9 +219,10 @@ box(instrument,'Screen glass',[-.68,.22,.548],[2.52,1.64,.025],mat('#07140c',.2,
 box(instrument,'Brand plate',[1.48,.91,.49],[1.15,.18,.045],dark);
 textLabel(instrument,'V-03 VECTOR',[.96,.89,.526],.075,'#baff7b');
 textLabel(instrument,'OSCILLOSCOPE',[1.04,.68,.526],.105,'#d4ddcf');
-textLabel(instrument,'FREQ',[1.03,.37,.526],.055,'#baff7b');
-textLabel(instrument,'AMP',[1.03,-.15,.526],.055,'#baff7b');
-textLabel(instrument,'PHASE',[1.03,-.67,.526],.055,'#baff7b');
+// Place each legend immediately above its matching physical knob.
+textLabel(instrument,'FREQUENCY',[1.52,.53,.575],.070,'#f4f2ff');
+textLabel(instrument,'AMPLITUDE',[1.52,-.02,.575],.070,'#f4f2ff');
+textLabel(instrument,'PHASE',[1.52,-.55,.575],.070,'#f4f2ff');
 // Screen grid, positioned on the front of glass
 const grid=new THREE.Group();grid.position.set(-.68,.22,.568);instrument.add(grid);
 const gridMat=new THREE.LineBasicMaterial({color:0x3c8b4b,transparent:true,opacity:.52});
