@@ -336,7 +336,7 @@ const driver=box(root,'Screwdriver handle',[2.8,-.04,-1.55],[.18,.18,.68],mat('#
 const shaft=box(root,'Screwdriver shaft',[2.55,-.06,-1.2],[.045,.045,.45],edge);shaft.rotation.y=.32;
 // Add mesh waveform line
 let audioAnalyser=null,audioData=null,audioCtx=null,audioElement=null,audioSource=null,audioObjectUrl=null;
-async function connectAudioElement(el){
+async async function connectAudioElement(el){
   try{
     if(audioCtx){try{await audioCtx.close()}catch{}}
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
@@ -347,7 +347,7 @@ async function connectAudioElement(el){
     $('audioPlay').disabled=false;$('audioStop').disabled=false;
     $('audioStatus').textContent='● AUDIO CONNECTED — STARTING CRT';
     $('status').textContent='● CRT READY FOR LIVE AUDIO';
-  }catch(e){console.error(e);audioElement=el;$('audioPlay').disabled=false;$('audioStop').disabled=false;$('audioStatus').textContent='● RADIO READY — TAP PLAY';}
+  }catch(e){console.error(e);audioCtx=null;audioAnalyser=null;audioData=null;audioSource=null;audioElement=el;$('audioPlay').disabled=false;$('audioStop').disabled=false;$('audioStatus').textContent='● AUDIO READY — TAP PLAY (LIVE ANALYSIS UNAVAILABLE)';$('status').textContent='● AUDIO READY · CRT DEMO TRACE';return false;}
 }
 $('audioFile').addEventListener('change',async e=>{
   const file=e.target.files&&e.target.files[0];if(!file)return;
@@ -358,7 +358,7 @@ $('audioFile').addEventListener('change',async e=>{
 });
 $('audioPlay').addEventListener('click',async()=>{
   if(!audioElement)return;
-  try{await audioCtx.resume();await audioElement.play();$('audioStatus').textContent='● AUDIO PLAYING — CRT TRACE IS LIVE';$('audioPlay').textContent='Playing…';}catch(e){$('audioStatus').textContent='Tap Play again to allow audio playback.'}
+  try{await audioCtx?.resume();await audioElement.play();$('audioStatus').textContent=audioAnalyser?'● AUDIO PLAYING — CRT TRACE IS LIVE':'● AUDIO PLAYING — CRT DEMO TRACE ACTIVE';$('audioPlay').textContent='Playing…';}catch(e){$('audioStatus').textContent='Tap Play again to allow audio playback.'}
 });
 $('audioStop').addEventListener('click',()=>{if(audioElement){audioElement.pause();audioElement.currentTime=0;}$('audioPlay').textContent='Play audio';$('audioStatus').textContent='● AUDIO STOPPED'});
 $('radioConnect').addEventListener('click',async()=>{
@@ -397,8 +397,8 @@ renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domEleme
 renderer.domElement.addEventListener('pointermove',e=>{if(!activeSemKnob)return;const dx=e.clientX-semLastX;semLastX=e.clientX;if(Math.abs(dx)<1)return;const k=activeSemKnob.userData.semControl;const id=k==='mag'?'semMag':k==='focus'?'semFocus':'semBright';const input=$(id);const scale=k==='mag'?.025:.7;input.value=String(Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)+dx*scale)));input.dispatchEvent(new Event('input'))});
 renderer.domElement.addEventListener('pointermove',e=>{if(!activeKnob)return;const dx=e.clientX-lastX;lastX=e.clientX;const c=activeKnob.userData.control;const el=$(c);const sensitivity=c==='freq'?.22:c==='amp'?.0022:.55;const target=knobTargets[c]+dx*sensitivity;knobTargets[c]=Math.max(Number(el.min),Math.min(Number(el.max),target));});
 function endDrag(){if(activeKnob){knobSettling=true;activeKnob=null}if(pressedMesh){pressedMesh.position.z=pressedMesh.userData.pressZ;pressedMesh=null}activeSemKnob=null;orbit.enabled=true;renderer.domElement.style.cursor=''}renderer.domElement.addEventListener('pointerup',endDrag);renderer.domElement.addEventListener('pointercancel',endDrag);
-function resize(){const w=stage.clientWidth,h=stage.clientHeight;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}window.addEventListener('resize',resize);resize();updateUI();
-function animate(now){requestAnimationFrame(animate);if(activeKnob||knobSettling){const c=(activeKnob||knobs.find(k=>k.userData.control&&Math.abs(state[k.userData.control]-knobTargets[k.userData.control])>0.0001))?.userData.control;if(c){const diff=knobTargets[c]-state[c];const minStep=c==='freq'?.015:c==='amp'?.00015:.035;if(Math.abs(diff)<minStep){state[c]=knobTargets[c];if(!activeKnob)knobSettling=false}else state[c]+=diff*.14;$(c).value=String(state[c]);updateUI()}else knobSettling=false}else if(!state.paused)updateTrace(now/1000);updateLadder(now/1000);orbit.update();renderer.render(scene,camera)}requestAnimationFrame(animate);$('status').textContent='● INTERACTIVE 3D MESH READY';
+function resize(){const w=stage.clientWidth,h=stage.clientHeight;if(w<=0||h<=0)return;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}window.addEventListener('resize',resize);resize();updateUI();
+function animate(now){requestAnimationFrame(animate);if(document.hidden)return;if(activeKnob||knobSettling){const c=(activeKnob||knobs.find(k=>k.userData.control&&Math.abs(state[k.userData.control]-knobTargets[k.userData.control])>0.0001))?.userData.control;if(c){const diff=knobTargets[c]-state[c];const minStep=c==='freq'?.015:c==='amp'?.00015:.035;if(Math.abs(diff)<minStep){state[c]=knobTargets[c];if(!activeKnob)knobSettling=false}else state[c]+=diff*.14;$(c).value=String(state[c]);updateUI()}else knobSettling=false}else if(!state.paused)updateTrace(now/1000);updateLadder(now/1000);orbit.update();renderer.render(scene,camera)}requestAnimationFrame(animate);$('status').textContent='● INTERACTIVE 3D MESH READY';
 function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
 $('glb').addEventListener('click',async()=>{try{$('glb').disabled=true;$('status').textContent='● BUILDING GLB MESH…';const ex=new GLTFExporter();const data=await ex.parseAsync(root,{binary:true,onlyVisible:true});download(new Blob([data],{type:'model/gltf-binary'}),'oscilloscopes-art-v03.glb');$('status').textContent='● GLB EXPORTED'}catch(e){console.error(e);$('status').textContent='Export failed — try again'}finally{$('glb').disabled=false}});
 async function makeUSDZ(){const exporter=new USDZExporter();return await exporter.parseAsync(root,{ar:true})}
@@ -553,7 +553,7 @@ $('semSampleButtons').addEventListener('click',e=>{const btn=e.target.closest('[
 $('semGrain').addEventListener('change',e=>{semState.grain=e.target.checked;drawSem()});
 $('semPause').addEventListener('click',()=>{semState.paused=!semState.paused;$('semPause').textContent=semState.paused?'Resume scan':'Pause scan';drawSem()});
 $('semRescan').addEventListener('click',()=>{semState.frame++;semState.phase+=27;drawSem()});
-let semLast=0,semLastFrameBucket=0;function semAnimate(now){requestAnimationFrame(semAnimate);if(now-semLast>60){semLast=now;if(!semState.paused){semState.phase+=semState.speed;const bucket=Math.floor(semState.phase/100);if(bucket>semLastFrameBucket){semState.frame+=bucket-semLastFrameBucket;semLastFrameBucket=bucket}const line=$('semScanline');line.style.transform='translateY('+((semState.phase%100)/100*Math.max(0,$('semScreen').clientHeight-4))+'px)';drawSem()}}}requestAnimationFrame(semAnimate);
+let semLast=0,semLastFrameBucket=0;function semAnimate(now){requestAnimationFrame(semAnimate);if(document.hidden)return;if(now-semLast>60){semLast=now;if(!semState.paused){semState.phase+=semState.speed;const bucket=Math.floor(semState.phase/100);if(bucket>semLastFrameBucket){semState.frame+=bucket-semLastFrameBucket;semLastFrameBucket=bucket}const line=$('semScanline');line.style.transform='translateY('+((semState.phase%100)/100*Math.max(0,$('semScreen').clientHeight-4))+'px)';drawSem()}}}requestAnimationFrame(semAnimate);
 drawSem();
 
 </script></body></html>
