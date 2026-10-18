@@ -9,6 +9,11 @@ Notable project changes are recorded here. This file is maintained by hand; it i
 - Kept audio files in the browser; no upload service or server-side processing was added.
 - Documented the limits of ordinary music: recognizable pictures work best with audio designed for oscilloscope/vector displays.
 
+## Version 2.0 — audio playback and multi-stroke refinements
+
+- Added a dedicated output-volume slider and more informative playback status, including likely silent-source and browser audio-context issues.
+- Fixed drawing paths to preserve separate pen strokes and SVG paths in the oscilloscope view and stereo WAV export.
+
 ## Version 2.0 — draw-to-sound studio
 
 - Added a touch- and mouse-friendly drawing pad that turns a path into an oscilloscope XY trace.
