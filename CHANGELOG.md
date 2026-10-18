@@ -9,6 +9,13 @@ Notable project changes are recorded here. This file is maintained by hand; it i
 - Kept audio files in the browser; no upload service or server-side processing was added.
 - Documented the limits of ordinary music: recognizable pictures work best with audio designed for oscilloscope/vector displays.
 
+## Version 2.0 — draw-to-sound studio
+
+- Added a touch- and mouse-friendly drawing pad that turns a path into an oscilloscope XY trace.
+- Added SVG path import for simple vector artwork, with point sampling and normalized placement.
+- Added stereo 16-bit PCM WAV export: left-channel samples encode horizontal movement and right-channel samples encode vertical movement.
+- Kept SVG parsing local in the browser and did not add a server upload service.
+
 ## Version 2.0 — code clarity and documentation pass
 
 **Status:** preparing the version 2.0 milestone.
