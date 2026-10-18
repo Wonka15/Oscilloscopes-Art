@@ -51,6 +51,11 @@ body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),ra
 .sem-source{color:#d8d4ff}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{transition:none!important;animation:none!important}}
 
+
+/* Keep the power control visually distinct after the general glass-button theme. */
+.power-overlay{font-size:14px!important;font-weight:850;letter-spacing:.025em;text-align:center;border:1px solid #ffd18b!important;background:linear-gradient(145deg,#44351ff0,#1e1b2df2)!important;color:#fff1d2!important;box-shadow:inset 0 1px #ffffff45,0 0 0 1px #ffd18b20,0 8px 24px #0008!important;}
+.power-overlay[aria-pressed="true"]{border-color:#c6a5ff!important;background:linear-gradient(145deg,#6039a7f5,#2a2049f5)!important;color:#fff!important;box-shadow:inset 0 1px #ffffff55,0 0 0 1px #b68aff65,0 0 22px #a36aff55,0 8px 24px #0008!important;}
+.power-overlay:focus-visible{outline:3px solid #f5eaff;outline-offset:3px}
 </style>
 </head>
 <body><div class="app">
@@ -152,16 +157,18 @@ function box(parent,name,pos,size,material,bevel=0){
 }
 function cylinder(parent,name,pos,radius,depth,material,segments=40){const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,depth,segments),material);m.name=name;m.rotation.x=Math.PI/2;m.position.set(...pos);parent.add(m);return m}
 function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){
- // Keep canvas typography and world-space dimensions proportional so text is not
- // stretched thin. A minimum physical height makes small panel legends readable.
+ // Build a text texture whose aspect ratio follows the label length. This keeps
+ // labels crisp without squashing wide words or stretching short ones.
  const labelHeight=Math.max(size*1.4,.09);
- const c=document.createElement('canvas');c.width=2048;c.height=256;const x=c.getContext('2d');
+ const c=document.createElement('canvas');c.height=256;
+ c.width=Math.max(716,Math.min(2048,Math.ceil(text.length*112+160)));
+ const x=c.getContext('2d');
  x.clearRect(0,0,c.width,c.height);x.font='800 164px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';
  x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.strokeStyle='rgba(4,6,14,.98)';x.lineWidth=17;
- x.strokeText(text,c.width/2,c.height/2,c.width-84);
- x.fillStyle=color;x.shadowColor='#000';x.shadowBlur=7;x.fillText(text,c.width/2,c.height/2,c.width-84);
+ x.strokeText(text,c.width/2,c.height/2,c.width-56);
+ x.fillStyle=color;x.shadowColor='#000';x.shadowBlur=7;x.fillText(text,c.width/2,c.height/2,c.width-56);
  const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
- const width=Math.max(labelHeight*2.8,text.length*labelHeight*.52);
+ const width=labelHeight*(c.width/c.height);
  const m=new THREE.Mesh(new THREE.PlaneGeometry(width,labelHeight),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false,toneMapped:false}));
  m.name='Readable label: '+text;m.position.set(...pos);parent.add(m);return m
 }
