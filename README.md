@@ -29,6 +29,10 @@ An interactive retro-futurist oscilloscope playground by [Wonka15](https://githu
 
 Open `index.html` for Vector Lab. Open `3d.html` for the 3D Bench. The 3D page loads Three.js from a CDN and needs an internet connection.
 
+## Quality checks
+
+Before deployment, GitHub Actions runs `node scripts/check-inline-js.mjs` to parse inline JavaScript in both HTML pages and verify that HTML IDs are unique. This lightweight static check catches syntax errors and duplicate IDs; it does not replace testing in a real browser.
+
 ## Deployment
 
 The GitHub Actions workflow in `.github/workflows/pages.yml` publishes the site whenever changes are pushed to `main`. The repository's Pages source should be set to **GitHub Actions** if GitHub prompts for it.
