@@ -190,15 +190,14 @@ function makeWavBlob(audio){
   for(let i=0,offset=44;i<frames;i++,offset+=4){const l=Math.max(-1,Math.min(1,audio.left[i])),r=Math.max(-1,Math.min(1,audio.right[i]));view.setInt16(offset,l<0?l*32768:l*32767,true);view.setInt16(offset+2,r<0?r*32768:r*32767,true)}
   return new Blob([buffer],{type:'audio/wav'});
 }
-function useDrawing(){
-  const audio=drawingAudioSamples();state.audioBuffer=state.audioContext?state.audioContext.createBuffer(2,audio.left.length,audio.sampleRate):null;
-  if(state.audioBuffer){state.audioBuffer.copyToChannel(audio.left,0);state.audioBuffer.copyToChannel(audio.right,1)}
+async function useDrawing(){
+  const audio=drawingAudioSamples(),context=await ensureAudioContext();
+  state.audioBuffer=context.createBuffer(2,audio.left.length,audio.sampleRate);
+  state.audioBuffer.copyToChannel(audio.left,0);state.audioBuffer.copyToChannel(audio.right,1)
   state.mode='drawxy';document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='audioxy'));
   $('status').textContent='● DRAWN XY MODE';$('drawStatus').textContent='Drawing is now on the oscilloscope. Download WAV to save the stereo signal, or press Play mix to hear it.';
-  // Build the same stereo signal for browser playback even if AudioContext has not yet been created.
-  ensureAudioContext().then(context=>{const ready=context.createBuffer(2,audio.left.length,audio.sampleRate);ready.copyToChannel(audio.left,0);ready.copyToChannel(audio.right,1);state.audioBuffer=ready;});
 }
-$('useDrawingBtn').addEventListener('click',()=>{try{useDrawing()}catch(error){$('drawStatus').textContent=error.message}});
+$('useDrawingBtn').addEventListener('click',async()=>{try{await useDrawing()}catch(error){$('drawStatus').textContent=error.message}});
 $('downloadWavBtn').addEventListener('click',()=>{try{const blob=makeWavBlob(drawingAudioSamples()),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='oscilloscopes-art-drawing.wav';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('drawStatus').textContent='WAV exported · stereo XY coordinates are encoded in the left and right audio channels.'}catch(error){$('drawStatus').textContent=error.message}});
 $('drawHelpBtn').addEventListener('click',()=>{$('drawStatus').textContent='Each point becomes a stereo sample pair. An oscilloscope in XY mode uses the left channel for X and the right channel for Y, so the sound carries the drawing path.'});
 paintDrawingPad();
