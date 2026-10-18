@@ -25,6 +25,8 @@ Oscilloscopes Art is a hands-on visual lab by [Wonka15](https://github.com/Wonka
 - Draw multiple separate strokes with touch or mouse; lifted strokes stay separate in the display and exported audio.
 - Import simple SVG artwork made from path elements, keeping each SVG path as a separate stroke; export the drawing as stereo PCM WAV with silent gaps between strokes.
 - Adjust playback output volume separately from each layer's mix volume; playback status helps diagnose silent files and suspended browser audio.
+- Tap ten built-in synthesized shape presets, use the microphone for live sound-reactive traces, and tilt supported devices with the motion button.
+- Load a YouTube video in the embedded player and use the microphone to visualize sound from the device speakers; YouTube's protected audio cannot be sampled directly by the page. Direct internet radio streams work only when the stream and browser permit cross-origin analysis.
 - Use the responsive layout on desktop, tablet, and phone.
 
 ### 3D Bench
