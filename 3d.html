@@ -253,18 +253,20 @@ for(let i=0;i<11;i++)box(root,'Microscope bench wood grain',[4.8+i*.5,-.113,0],[
 // instrument case
 const instrument=new THREE.Group();instrument.position.set(0,.98,.05);root.add(instrument);
 box(instrument,'Steel instrument chassis',[0,0,0],[4.45,2.55,.82],dark,.075);
-box(instrument,'Front faceplate',[0,0,.43],[4.32,2.42,.09],edge,.025);
-box(instrument,'Screen bezel',[-.68,.22,.495],[2.7,1.82,.09],rubber,.025);
-box(instrument,'Screen glass',[-.68,.22,.548],[2.52,1.64,.025],mat('#07140c',.2,.12));
-box(instrument,'Brand plate',[1.48,.91,.49],[1.15,.18,.045],dark);
-textLabel(instrument,'V-03 VECTOR',[.96,.89,.526],.075,'#baff7b');
-textLabel(instrument,'OSCILLOSCOPE',[1.04,.68,.526],.105,'#d4ddcf');
+box(instrument,'Front faceplate',[0,0,.455],[4.32,2.42,.09],edge,.025);
+box(instrument,'Screen bezel',[-.68,.22,.545],[2.7,1.82,.09],rubber,.025);
+box(instrument,'Screen glass',[-.68,.22,.6025],[2.52,1.64,.025],mat('#07140c',.2,.12));
+box(instrument,'Brand plate',[1.48,.91,.5225],[1.15,.18,.045],dark);
+textLabel(instrument,'V-03 VECTOR',[.96,.89,.56],.075,'#baff7b');
+textLabel(instrument,'OSCILLOSCOPE',[1.04,.68,.507],.105,'#d4ddcf');
 // Place each legend immediately above its matching physical knob.
-textLabel(instrument,'FREQUENCY',[1.52,.53,.575],.070,'#f4f2ff');
-textLabel(instrument,'AMPLITUDE',[1.52,-.02,.575],.070,'#f4f2ff');
-textLabel(instrument,'PHASE',[1.52,-.55,.575],.070,'#f4f2ff');
+textLabel(instrument,'FREQUENCY',[1.52,.53,.515],.070,'#f4f2ff');
+textLabel(instrument,'AMPLITUDE',[1.52,-.02,.515],.070,'#f4f2ff');
+textLabel(instrument,'PHASE',[1.52,-.55,.515],.070,'#f4f2ff');
+// Front-panel parts are stepped forward in small, flush offsets: chassis → faceplate → bezel → glass.
+// This prevents visible z-fighting and reduces the appearance of floating/embedded parts.
 // Screen grid, positioned on the front of glass
-const grid=new THREE.Group();grid.position.set(-.68,.22,.568);instrument.add(grid);
+const grid=new THREE.Group();grid.position.set(-.68,.22,.6225);instrument.add(grid);
 const gridMat=new THREE.LineBasicMaterial({color:0x3c8b4b,transparent:true,opacity:.52});
 for(let i=0;i<=10;i++){let x=-1.19+i*.238;let a=new THREE.Vector3(x,-.75,0),b=new THREE.Vector3(x,.75,0);grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),gridMat))}
 for(let i=0;i<=8;i++){let y=-.72+i*.18;let a=new THREE.Vector3(-1.19,y,0),b=new THREE.Vector3(1.19,y,0);grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([a,b]),gridMat))}
@@ -273,12 +275,12 @@ grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vect
 const traceGeo=new THREE.BufferGeometry();const tracePositions=new Float32Array(1200*3);traceGeo.setAttribute('position',new THREE.BufferAttribute(tracePositions,3));const traceMat=new THREE.LineBasicMaterial({color:state.color,transparent:true,opacity:.96});const trace=new THREE.Line(traceGeo,traceMat);trace.frustumCulled=false;trace.position.z=.015;grid.add(trace);
 // Knobs, with ticks and pointers
 const knobs=[];
-function makeKnob(name,x,y,r,control){const g=new THREE.Group();g.name=name;g.position.set(x,y,.59);instrument.add(g);cylinder(g,name+' base',[0,0,0],r*1.18,.09,dark);cylinder(g,name+' dial',[0,0,.065],r,.14,mat('#303a32',.3,.45));cylinder(g,name+' cap',[0,0,.145],r*.68,.025,mat('#677466',.26,.48));const pointer=box(g,name+' pointer',[0,r*.39,.166],[.035,r*.33,.018],mat('#c9ff98',.25,.2));pointer.rotation.z=.15;for(let i=0;i<11;i++){const a=(-.78+i*.156);const tick=box(g,name+' tick',[Math.sin(a)*r*1.38,Math.cos(a)*r*1.38,.015],[.018,.07,.014],ivory);tick.rotation.z=-a}g.userData={control,pointer,baseRot:0};knobs.push(g);return g}
+function makeKnob(name,x,y,r,control){const g=new THREE.Group();g.name=name;g.position.set(x,y,.55);instrument.add(g);cylinder(g,name+' base',[0,0,0],r*1.18,.09,dark);cylinder(g,name+' dial',[0,0,.065],r,.14,mat('#303a32',.3,.45));cylinder(g,name+' cap',[0,0,.145],r*.68,.025,mat('#677466',.26,.48));const pointer=box(g,name+' pointer',[0,r*.39,.166],[.035,r*.33,.018],mat('#c9ff98',.25,.2));pointer.rotation.z=.15;for(let i=0;i<11;i++){const a=(-.78+i*.156);const tick=box(g,name+' tick',[Math.sin(a)*r*1.38,Math.cos(a)*r*1.38,.015],[.018,.07,.014],ivory);tick.rotation.z=-a}g.userData={control,pointer,baseRot:0};knobs.push(g);return g}
 makeKnob('Frequency knob',1.52,.22,.24,'freq');makeKnob('Amplitude knob',1.52,-.35,.21,'amp');makeKnob('Phase knob',1.52,-.88,.21,'phase');
 // Switches and cable jacks
 const scopeButtons=[];
 for(let i=0;i<3;i++){const b=cylinder(instrument,'Scope push button '+(i+1),[1.02-i*.34,-1.02,.55],.065,.08,mat(i===0?'#d2a45d':'#39463b',.25,.4),24);b.userData={scopeAction:['pause','reset','mode'][i],pressZ:b.position.z};scopeButtons.push(b)}
-for(let i=0;i<2;i++){cylinder(instrument,'BNC connector',[-1.65+i*.35,-1.03,.54],.11,.12,edge);cylinder(instrument,'BNC dark center',[-1.65+i*.35,-1.03,.61],.055,.02,rubber)}
+for(let i=0;i<2;i++){cylinder(instrument,'BNC connector',[-1.65+i*.35,-1.03,.56],.11,.12,edge);cylinder(instrument,'BNC dark center',[-1.65+i*.35,-1.03,.63],.055,.02,rubber)}
 // Flexible oscilloscope leads: routed over the tabletop, then over its front edge and down outside the table mesh.
 function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,100,.035,10,false),mat(color,.3,.2));mesh.name='Visible oscilloscope cable';root.add(mesh);return mesh}
 // Oscilloscope leads intentionally removed at user request.
