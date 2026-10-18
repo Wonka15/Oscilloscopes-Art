@@ -59,6 +59,7 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <div class="control"><div class="control-head"><label for="audioB">Sound layer B</label></div><input class="audio-file" id="audioB" type="file" accept="audio/*"><span class="audio-name" id="audioBName">No file selected</span></div>
 <div class="control"><div class="control-head"><label for="mixA">Layer A volume</label><output class="value" id="mixAOut">70%</output></div><input class="range" id="mixA" type="range" min="0" max="100" value="70" step="1"></div>
 <div class="control"><div class="control-head"><label for="mixB">Layer B volume</label><output class="value" id="mixBOut">30%</output></div><input class="range" id="mixB" type="range" min="0" max="100" value="30" step="1"></div>
+<div class="control"><div class="control-head"><label for="outputVolume">Playback volume</label><output class="value" id="outputVolumeOut">80%</output></div><input class="range" id="outputVolume" type="range" min="0" max="100" value="80" step="1"></div>
 <div class="actions"><button class="action" id="audioStopBtn" type="button">■ Stop audio</button><button class="action primary" id="audioPlayBtn" type="button">▶ Play mix</button></div>
 <p class="audio-status" id="audioStatus" role="status" aria-live="polite">Choose an audio file to begin. Stereo audio designed for XY display produces the clearest images.</p>
 </section>
@@ -89,7 +90,7 @@ const canvas=document.getElementById('trace'),ctx=canvas.getContext('2d'),screen
 // Shorthand for looking up a page element by its unique HTML id.
 const $=id=>document.getElementById(id);
 // All interactive values live here. Event handlers update this object; drawing functions read it.
-const state={mode:'lissajous',freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',colorName:'Phosphor green',power:true,paused:false,time:0,last:0,audioContext:null,audioFiles:[null,null],audioGains:[.7,.3],audioBuffer:null,audioSource:null,audioPlaying:false,drawingPoints:[],drawPointerDown:false};
+const state={mode:'lissajous',freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',colorName:'Phosphor green',power:true,paused:false,time:0,last:0,audioContext:null,audioFiles:[null,null],audioGains:[.7,.3],audioBuffer:null,audioSource:null,audioOutputGain:null,audioPlaying:false,drawingPoints:[],drawingStrokes:[],activeDrawingStroke:null,drawPointerDown:false};
 // Audio files are decoded locally in the browser. They are not uploaded to a server.
 let width=0,height=0,dpr=1,raf=0;
 /** Resize the canvas for the current screen size and device pixel ratio to keep the trace crisp. */
@@ -99,12 +100,12 @@ function drawGrid(){ctx.clearRect(0,0,width,height);ctx.fillStyle='#071009';ctx.
 /** Calculate [x, y] points for the selected waveform without drawing them yet. */
 function points(t){const pts=[],n=state.mode==='sine'||state.mode==='square'||state.mode==='triangle'?900:1100;const cx=width/2,cy=height/2,rx=width*.43*state.amp,ry=height*.39*state.amp,ph=state.phase*Math.PI/180;
 // A hand-drawn or imported path is displayed using the same XY coordinate system.
-if(state.mode==='drawxy'&&state.drawingPoints.length>1){for(const p of state.drawingPoints){pts.push([cx+(p.x-.5)*2*rx,cy+(p.y-.5)*2*ry])}return pts}
+if(state.mode==='drawxy'&&state.drawingStrokes.length){for(const stroke of state.drawingStrokes){if(!stroke.length)continue;pts.push(null);for(const p of stroke)pts.push([cx+(p.x-.5)*2*rx,cy+(p.y-.5)*2*ry])}return pts}
 // In Audio XY mode, stereo samples become points: left = X, right = Y.
 if(state.mode==='audioxy'&&state.audioBuffer){const left=state.audioBuffer.getChannelData(0),right=state.audioBuffer.getChannelData(1),count=Math.min(12000,state.audioBuffer.length);for(let i=0;i<count;i++){const index=Math.floor(i*(state.audioBuffer.length-1)/Math.max(1,count-1));pts.push([cx+left[index]*rx,cy-right[index]*ry])}return pts}
 for(let i=0;i<=n;i++){const u=i/n;let x,y;switch(state.mode){case'lissajous':x=cx+rx*Math.sin(2*Math.PI*(2*u)+t*.38);y=cy+ry*Math.sin(2*Math.PI*(3*u)+ph+t*.38);break;case'circle':x=cx+rx*Math.cos(2*Math.PI*u+t*.32);y=cy+ry*Math.sin(2*Math.PI*u+t*.32);break;case'spiral':{const a=2*Math.PI*(3*u)+t*.28,r=.04+.96*u;x=cx+rx*r*Math.cos(a);y=cy+ry*r*Math.sin(a);break}case'sine':{x=width*u;y=cy-ry*Math.sin(2*Math.PI*(state.freq/30)*u+t*.65+ph)*.85;break}case'square':{x=width*u;const s=Math.sin(2*Math.PI*(state.freq/30)*u+t*.65+ph);y=cy-ry*(s>=0?1:-1)*.8;break}case'triangle':{x=width*u;const z=((state.freq/30)*u+t*.1+ph/(2*Math.PI))%1;y=cy-ry*(1-4*Math.abs(z-.5))*.85;break}}pts.push([x,y])}return pts}
 /** Render the calculated points with a soft phosphor glow and a sharper center line. */
-function strokeTrace(t){const pts=points(t),c=state.color;ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.strokeStyle=c;ctx.globalAlpha=.12+state.glow/260;ctx.lineWidth=7+state.glow*.055;ctx.shadowColor=c;ctx.shadowBlur=8+state.glow*.23;ctx.stroke();ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.globalAlpha=.4+state.glow/170;ctx.lineWidth=1.25;ctx.shadowBlur=4+state.glow*.16;ctx.stroke();ctx.restore()}
+function strokeTrace(t){const pts=points(t),c=state.color;ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineJoin='round';ctx.lineCap='round';ctx.strokeStyle=c;ctx.globalAlpha=.12+state.glow/260;ctx.lineWidth=7+state.glow*.055;ctx.shadowColor=c;ctx.shadowBlur=8+state.glow*.23;let started=false;ctx.beginPath();for(const p of pts){if(!p){if(started)ctx.stroke();ctx.beginPath();started=false;continue}if(!started){ctx.moveTo(p[0],p[1]);started=true}else ctx.lineTo(p[0],p[1])}if(started)ctx.stroke();ctx.globalAlpha=.4+state.glow/170;ctx.lineWidth=1.25;ctx.shadowBlur=4+state.glow*.16;started=false;ctx.beginPath();for(const p of pts){if(!p){if(started)ctx.stroke();ctx.beginPath();started=false;continue}if(!started){ctx.moveTo(p[0],p[1]);started=true}else ctx.lineTo(p[0],p[1])}if(started)ctx.stroke();ctx.restore()}
 /** Animation-frame callback: advance time when enabled, redraw the grid/trace, then schedule the next frame. */
 function render(now){if(!state.last)state.last=now;const dt=Math.min((now-state.last)/1000,.05);state.last=now;if(!state.paused&&state.power)state.time+=dt*Math.max(.18,state.freq/60);drawGrid();if(state.power)strokeTrace(state.time);raf=requestAnimationFrame(render)}
 /** Keep numeric readouts and the instrument's small display labels synchronized with state. */
@@ -117,7 +118,7 @@ $('freq').addEventListener('input',e=>{state.freq=+e.target.value;updateLabels()
 $('modes').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)setMode(b.dataset.mode)});
 $('colors').addEventListener('click',e=>{const b=e.target.closest('[data-color]');if(!b)return;state.color=b.dataset.color;state.colorName=b.dataset.name;$('colorName').textContent=state.colorName;document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s===b))});
 // AUDIO ART STUDIO: decode selected files, mix them in stereo, preview the sound, and draw the XY signal.
-async function ensureAudioContext(){if(!state.audioContext){state.audioContext=new (window.AudioContext||window.webkitAudioContext)()}if(state.audioContext.state==='suspended')await state.audioContext.resume();return state.audioContext}
+async function ensureAudioContext(){if(!state.audioContext){const AudioContextClass=window.AudioContext||window.webkitAudioContext;if(!AudioContextClass)throw new Error('This browser does not support Web Audio. Try the latest Safari or Chrome.');state.audioContext=new AudioContextClass();state.audioOutputGain=state.audioContext.createGain();state.audioOutputGain.gain.value=Number($('outputVolume').value)/100;state.audioOutputGain.connect(state.audioContext.destination)}if(state.audioContext.state!=='running')await state.audioContext.resume();if(state.audioContext.state!=='running')throw new Error('Audio is still suspended. Tap Play again and check browser audio permissions.');return state.audioContext}
 async function loadAudioLayer(slot,file){if(!file)return;try{const context=await ensureAudioContext(),bytes=await file.arrayBuffer(),decoded=await context.decodeAudioData(bytes),wasPlaying=state.audioPlaying;stopAudio();state.audioFiles[slot]=decoded;$('audio'+(slot===0?'A':'B')+'Name').textContent=file.name;await rebuildAudioMix();$('audioStatus').textContent='Loaded '+(slot===0?'layer A':'layer B')+': '+file.name+' · '+decoded.duration.toFixed(1)+' seconds.';if(state.audioBuffer)setMode('audioxy');if(wasPlaying)await playAudioMix()}catch(error){console.error('Could not decode audio file:',error);$('audioStatus').textContent='This audio file could not be decoded. Try a WAV, MP3, or M4A file.'}}
 async function rebuildAudioMix(){const context=await ensureAudioContext(),available=state.audioFiles.filter(Boolean);if(!available.length){state.audioBuffer=null;return}const length=Math.max(...available.map(buffer=>buffer.length)),mix=context.createBuffer(2,length,context.sampleRate),left=mix.getChannelData(0),right=mix.getChannelData(1);let peak=0;for(let slot=0;slot<2;slot++){const source=state.audioFiles[slot];if(!source)continue;const gain=state.audioGains[slot];const sourceLeft=source.getChannelData(0),sourceRight=source.numberOfChannels>1?source.getChannelData(1):sourceLeft;for(let i=0;i<source.length;i++){left[i]+=sourceLeft[i]*gain;right[i]+=sourceRight[i]*gain}}for(let i=0;i<length;i++)peak=Math.max(peak,Math.abs(left[i]),Math.abs(right[i]));if(peak>.92){const scale=.92/peak;for(let i=0;i<length;i++){left[i]*=scale;right[i]*=scale}}state.audioBuffer=mix;$('audioStatus').textContent='Mix ready · '+available.length+' layer'+(available.length===1?'':'s')+' · '+mix.duration.toFixed(1)+' seconds.'}
 function stopAudio(){if(state.audioSource){try{state.audioSource.stop()}catch{}state.audioSource.disconnect();state.audioSource=null}state.audioPlaying=false;$('audioPlayBtn').textContent='▶ Play mix'}
@@ -126,7 +127,8 @@ function updateMixSlider(slot,value){state.audioGains[slot]=Number(value)/100;$(
 async function commitMixChange(){if(!state.audioFiles.some(Boolean))return;const wasPlaying=state.audioPlaying;stopAudio();await rebuildAudioMix();if(wasPlaying)playAudioMix()}
 $('mixA').addEventListener('input',e=>updateMixSlider(0,e.target.value));$('mixB').addEventListener('input',e=>updateMixSlider(1,e.target.value));
 $('mixA').addEventListener('change',commitMixChange);$('mixB').addEventListener('change',commitMixChange);
-async function playAudioMix(){if(!state.audioBuffer){$('audioStatus').textContent='Load at least one audio file before playing.';return}try{const context=await ensureAudioContext();stopAudio();const source=context.createBufferSource();source.buffer=state.audioBuffer;source.connect(context.destination);source.onended=()=>{if(state.audioSource===source){state.audioSource=null;state.audioPlaying=false;$('audioPlayBtn').textContent='▶ Play mix'}};state.audioSource=source;state.audioPlaying=true;source.start();$('audioPlayBtn').textContent='▶ Restart mix';$('audioStatus').textContent='Playing locally · the XY trace is drawn from the mixed stereo samples.'}catch(error){console.error('Audio playback failed:',error);$('audioStatus').textContent='Playback was blocked by the browser. Tap Play mix again to allow audio.'}}
+$('outputVolume').addEventListener('input',e=>{const value=Number(e.target.value);$('outputVolumeOut').textContent=value+'%';if(state.audioOutputGain)state.audioOutputGain.gain.setTargetAtTime(value/100,state.audioContext.currentTime,.015)});
+async function playAudioMix(){if(!state.audioBuffer){$('audioStatus').textContent='Load at least one audio file before playing.';return}try{const context=await ensureAudioContext();stopAudio();const source=context.createBufferSource();source.buffer=state.audioBuffer;source.connect(state.audioOutputGain||context.destination);source.onended=()=>{if(state.audioSource===source){state.audioSource=null;state.audioPlaying=false;$('audioPlayBtn').textContent='▶ Play mix'}};state.audioSource=source;state.audioPlaying=true;source.start();$('audioPlayBtn').textContent='▶ Restart mix';const left=state.audioBuffer.getChannelData(0),right=state.audioBuffer.getChannelData(1);let peak=0;for(let i=0;i<state.audioBuffer.length;i+=Math.max(1,Math.floor(state.audioBuffer.length/2000)))peak=Math.max(peak,Math.abs(left[i]),Math.abs(right[i]));$('audioStatus').textContent=peak<0.0001?'Playback started, but this mix appears silent. Raise the layer volumes or choose another file.':'Playing locally · '+state.audioBuffer.duration.toFixed(1)+' seconds · output '+$('outputVolume').value+'%. If silent on iPad, raise device volume and turn off Silent Mode.'}catch(error){console.error('Audio playback failed:',error);$('audioStatus').textContent='Playback was blocked by the browser. Tap Play mix again to allow audio.'}}
 $('audioPlayBtn').addEventListener('click',playAudioMix);$('audioStopBtn').addEventListener('click',()=>{stopAudio();$('audioStatus').textContent='Audio stopped. Your loaded tracks are still ready to mix.'});
 
 // DRAW-TO-SOUND STUDIO
@@ -138,14 +140,14 @@ function paintDrawingPad(){
   drawCtx.strokeStyle='#4a8b4b35';drawCtx.lineWidth=1;
   for(let i=1;i<8;i++){const x=drawPad.width*i/8;drawCtx.beginPath();drawCtx.moveTo(x,0);drawCtx.lineTo(x,drawPad.height);drawCtx.stroke()}
   for(let i=1;i<4;i++){const y=drawPad.height*i/4;drawCtx.beginPath();drawCtx.moveTo(0,y);drawCtx.lineTo(drawPad.width,y);drawCtx.stroke()}
-  if(state.drawingPoints.length){drawCtx.beginPath();state.drawingPoints.forEach((p,i)=>{const x=p.x*drawPad.width,y=p.y*drawPad.height;if(i===0)drawCtx.moveTo(x,y);else drawCtx.lineTo(x,y)});drawCtx.strokeStyle='#aaff78';drawCtx.lineWidth=3;drawCtx.lineJoin='round';drawCtx.lineCap='round';drawCtx.shadowColor='#aaff78';drawCtx.shadowBlur=8;drawCtx.stroke();drawCtx.shadowBlur=0}
+  if(state.drawingStrokes.length){drawCtx.strokeStyle='#aaff78';drawCtx.lineWidth=3;drawCtx.lineJoin='round';drawCtx.lineCap='round';drawCtx.shadowColor='#aaff78';drawCtx.shadowBlur=8;for(const stroke of state.drawingStrokes){if(!stroke.length)continue;drawCtx.beginPath();stroke.forEach((p,i)=>{const x=p.x*drawPad.width,y=p.y*drawPad.height;if(i===0)drawCtx.moveTo(x,y);else drawCtx.lineTo(x,y)});drawCtx.stroke()}drawCtx.shadowBlur=0}
 }
 function padPoint(event){const r=drawPad.getBoundingClientRect();return{x:Math.max(0,Math.min(1,(event.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(event.clientY-r.top)/r.height))}}
-drawPad.addEventListener('pointerdown',event=>{state.drawPointerDown=true;drawPad.setPointerCapture(event.pointerId);state.drawingPoints.push(padPoint(event));paintDrawingPad()});
-drawPad.addEventListener('pointermove',event=>{if(!state.drawPointerDown)return;state.drawingPoints.push(padPoint(event));if(state.drawingPoints.length>2400)state.drawingPoints=state.drawingPoints.filter((_,i)=>i%2===0);paintDrawingPad()});
-function finishPadStroke(){state.drawPointerDown=false}
+drawPad.addEventListener('pointerdown',event=>{state.drawPointerDown=true;state.activeDrawingStroke=[];state.drawingStrokes.push(state.activeDrawingStroke);drawPad.setPointerCapture(event.pointerId);state.activeDrawingStroke.push(padPoint(event));paintDrawingPad()});
+drawPad.addEventListener('pointermove',event=>{if(!state.drawPointerDown||!state.activeDrawingStroke)return;state.activeDrawingStroke.push(padPoint(event));const total=state.drawingStrokes.reduce((sum,stroke)=>sum+stroke.length,0);if(total>2400){state.drawingStrokes=state.drawingStrokes.map(stroke=>stroke.filter((_,i)=>i%2===0));state.activeDrawingStroke=state.drawingStrokes[state.drawingStrokes.length-1]}paintDrawingPad()});
+function finishPadStroke(){state.drawPointerDown=false;state.activeDrawingStroke=null}
 drawPad.addEventListener('pointerup',finishPadStroke);drawPad.addEventListener('pointercancel',finishPadStroke);
-$('clearDrawingBtn').addEventListener('click',()=>{state.drawingPoints=[];paintDrawingPad();$('drawStatus').textContent='Drawing cleared. Start a new line whenever you are ready.'});
+$('clearDrawingBtn').addEventListener('click',()=>{state.drawingPoints=[];state.drawingStrokes=[];state.activeDrawingStroke=null;paintDrawingPad();$('drawStatus').textContent='Drawing cleared. Start a new stroke whenever you are ready.'});
 function normalizePathPoints(raw){
   if(raw.length<2)return [];
   let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
@@ -161,25 +163,17 @@ $('svgFile').addEventListener('change',async event=>{
     // Parse SVG as data only; never insert the uploaded markup into the live page.
     const parsed=new DOMParser().parseFromString(await file.text(),'image/svg+xml');
     if(parsed.querySelector('parsererror'))throw new Error('Invalid SVG markup');
-    const paths=[...parsed.querySelectorAll('path')].slice(0,80),raw=[];
-    for(const path of paths){
-      if(typeof path.getTotalLength!=='function'||typeof path.getPointAtLength!=='function')continue;
-      const length=path.getTotalLength();if(!Number.isFinite(length)||length<=0)continue;
-      const steps=Math.max(2,Math.min(300,Math.ceil(length/3)));
-      for(let i=0;i<=steps;i++){const p=path.getPointAtLength(length*i/steps);raw.push({x:p.x,y:p.y})}
-    }
-    if(raw.length<2)throw new Error('No usable SVG paths found');
-    state.drawingPoints=normalizePathPoints(raw).slice(0,2400);paintDrawingPad();
-    $('drawStatus').textContent='Imported '+file.name+' · '+state.drawingPoints.length+' sampled points. Choose Use drawing or Download WAV.';
+    const paths=[...parsed.querySelectorAll('path')].slice(0,80),rawStrokes=[];
+    for(const path of paths){if(typeof path.getTotalLength!=='function'||typeof path.getPointAtLength!=='function')continue;const length=path.getTotalLength();if(!Number.isFinite(length)||length<=0)continue;const steps=Math.max(2,Math.min(300,Math.ceil(length/3))),stroke=[];for(let i=0;i<=steps;i++){const p=path.getPointAtLength(length*i/steps);stroke.push({x:p.x,y:p.y})}if(stroke.length>1)rawStrokes.push(stroke)}
+    const raw=rawStrokes.flat();if(raw.length<2)throw new Error('No usable SVG paths found');const normalized=normalizePathPoints(raw);let offset=0;state.drawingStrokes=rawStrokes.map(stroke=>{const result=normalized.slice(offset,offset+stroke.length);offset+=stroke.length;return result}).slice(0,80);paintDrawingPad();
+    $('drawStatus').textContent='Imported '+file.name+' · '+state.drawingStrokes.length+' separate strokes. Choose Use drawing or Download WAV.';
   }catch(error){console.error('Could not import SVG:',error);$('drawStatus').textContent='Could not read that SVG. Try a simple SVG containing one or more path elements.'}
 });
 function drawingAudioSamples(){
   // Repeat each point briefly so the output audio holds the beam near that coordinate.
-  const points=state.drawingPoints;if(points.length<2)throw new Error('Draw or import a shape first.');
-  const samplesPerPoint=32,total=points.length*samplesPerPoint,left=new Float32Array(total),right=new Float32Array(total);
-  for(let i=0;i<points.length;i++){const p=points[i];const next=points[Math.min(i+1,points.length-1)];
-    for(let j=0;j<samplesPerPoint;j++){const t=j/samplesPerPoint,index=i*samplesPerPoint+j;left[index]=(p.x+(next.x-p.x)*t-.5)*1.8;right[index]=(.5-(p.y+(next.y-p.y)*t))*1.8}
-  }
+  const strokes=state.drawingStrokes.filter(stroke=>stroke.length>0);if(!strokes.length||strokes.every(stroke=>stroke.length<2))throw new Error('Draw or import a shape first.');
+  const samplesPerPoint=32,samplesPerLift=48,total=strokes.reduce((sum,stroke)=>sum+stroke.length*samplesPerPoint,0)+Math.max(0,strokes.length-1)*samplesPerLift,left=new Float32Array(total),right=new Float32Array(total);let cursor=0;
+  for(let s=0;s<strokes.length;s++){const points=strokes[s];for(let i=0;i<points.length;i++){const p=points[i],next=points[Math.min(i+1,points.length-1)];for(let j=0;j<samplesPerPoint;j++){const t=j/samplesPerPoint,index=cursor++;left[index]=(p.x+(next.x-p.x)*t-.5)*1.8;right[index]=(.5-(p.y+(next.y-p.y)*t))*1.8}}if(s<strokes.length-1)cursor+=samplesPerLift}
   return {left,right,sampleRate:44100};
 }
 function makeWavBlob(audio){
@@ -194,7 +188,7 @@ async function useDrawing(){
   const audio=drawingAudioSamples(),context=await ensureAudioContext();
   state.audioBuffer=context.createBuffer(2,audio.left.length,audio.sampleRate);
   state.audioBuffer.copyToChannel(audio.left,0);state.audioBuffer.copyToChannel(audio.right,1)
-  state.mode='drawxy';document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='audioxy'));
+  state.drawingPoints=[];state.mode='drawxy';document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='audioxy'));
   $('status').textContent='● DRAWN XY MODE';$('drawStatus').textContent='Drawing is now on the oscilloscope. Download WAV to save the stereo signal, or press Play mix to hear it.';
 }
 $('useDrawingBtn').addEventListener('click',async()=>{try{await useDrawing()}catch(error){$('drawStatus').textContent=error.message}});
