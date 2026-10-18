@@ -57,7 +57,8 @@ The Jacob's ladder is a **visual effect only**. No real high voltage is created 
 5. **Comment the reason.** A useful comment explains intent, assumptions, browser limitations, or a non-obvious calculation. A comment that simply repeats the next line adds little value.
 6. **Use descriptive names.** Names like `drawGrid` and `setLadderPower` help readers understand intent before they read the implementation.
 7. **Be careful with 3D coordinates.** Three.js uses `x`, `y`, and `z` coordinates. Before changing a model part, check its parent group, position, rotation, and dimensions.
-8. **Do not claim a simulation is real measurement.** The waveform and SEM visuals are for exploration, not calibrated engineering work.
+8. **Understand stereo XY audio.** In Audio XY mode, each stereo sample pair becomes a coordinate: left channel is horizontal (X), right channel is vertical (Y). The Audio Art Studio decodes selected files locally, combines up to two layers using their gain sliders, and builds a stereo buffer for playback and drawing. Ordinary stereo music may create abstract patterns rather than a clear picture; audio made specifically for XY display is more likely to draw a recognizable image.
+9. **Do not claim a simulation is real measurement.** The waveform and SEM visuals are for exploration, not calibrated engineering work.
 
 ## Test before you merge
 
@@ -78,6 +79,10 @@ This checks inline JavaScript syntax and duplicate HTML IDs. It is a useful guar
 - [ ] Switch all waveform modes and trace colors.
 - [ ] Pause, resume, power off, and power on the Vector Lab.
 - [ ] Save a PNG and confirm the downloaded image opens.
+- [ ] Load a local audio file in the Audio Art Studio and confirm its name appears.
+- [ ] Load a second file, adjust both mix levels, and check that the mix can be played and stopped.
+- [ ] Select Audio XY and confirm the stereo signal is rendered as a vector trace.
+- [ ] Try a stereo file made for oscilloscope music; compare it with ordinary music.
 - [ ] Open the 3D Bench and confirm the model appears.
 - [ ] Orbit and zoom the camera; drag the frequency, amplitude, and phase knobs.
 - [ ] Toggle the Jacob's ladder and confirm the status label matches its state.
