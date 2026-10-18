@@ -396,9 +396,33 @@ cable([[3.48,3.32,-1.57],[3.72,3.22,-1.40],[3.95,3.145,-1.25],[4.72,3.145,-1.25]
 panelLabel('SIMULATED POWER PATHS · EDUCATIONAL ONLY',3.55,2.94,-1.12,.045,'#f1edff');
 setLadderPower(false);
 
-// Small bench props: solder spool and screwdriver
-const spool=cylinder(root,'Solder spool',[-3,-.08,-1.4],.32,.23,edge,48);spool.rotation.x=Math.PI/2;spool.rotation.z=.3;
-cylinder(root,'Spool core',[-3,-.08,-1.4],.13,.25,rubber,32).rotation.x=Math.PI/2;
+// Small bench props: a properly upright solder spool and screwdriver.
+ // The tabletop top is y = -0.12. These vertical spool parts sit just above it,
+ // rather than lying on their sides or passing through the tabletop.
+const solderSpool=new THREE.Group();
+solderSpool.name='Upright solder spool';
+solderSpool.position.set(-3,0,-1.4);
+root.add(solderSpool);
+const spoolFlangeMaterial=mat('#8d9995',.32,.72);
+const solderWireMaterial=mat('#c77b48',.3,.78);
+// Broad top and bottom flanges make the silhouette read as a real wire spool.
+const spoolBottomFlange=cylinder(solderSpool,'Solder spool bottom flange',[0,-.098,0],.32,.035,spoolFlangeMaterial,48);
+spoolBottomFlange.rotation.set(0,0,0);
+const spoolTopFlange=cylinder(solderSpool,'Solder spool top flange',[0,.078,0],.32,.035,spoolFlangeMaterial,48);
+spoolTopFlange.rotation.set(0,0,0);
+// The wound-wire drum and center hub share the spool's vertical axis.
+const spoolDrum=cylinder(solderSpool,'Solder spool wound body',[0,-.01,0],.245,.14,solderWireMaterial,48);
+spoolDrum.rotation.set(0,0,0);
+const spoolCore=cylinder(solderSpool,'Solder spool center core',[0,-.01,0],.075,.18,rubber,32);
+spoolCore.rotation.set(0,0,0);
+// Fine concentric turns add visible wire texture around the drum.
+for(let turn=0;turn<7;turn++){
+  const wireTurn=new THREE.Mesh(new THREE.TorusGeometry(.255,.009,8,48),solderWireMaterial);
+  wireTurn.name='Solder wire turn '+(turn+1);
+  wireTurn.rotation.x=Math.PI/2;
+  wireTurn.position.set(0,-.058+turn*.0175,0);
+  solderSpool.add(wireTurn);
+}
 const driver=box(root,'Screwdriver handle',[2.8,-.04,-1.55],[.18,.18,.68],mat('#bf7d40',.4,.2));driver.rotation.y=.32;
 const shaft=box(root,'Screwdriver shaft',[2.55,-.06,-1.2],[.045,.045,.45],edge);shaft.rotation.y=.32;
 // Add mesh waveform line
