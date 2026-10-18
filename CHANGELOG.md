@@ -9,6 +9,12 @@ Notable project changes are recorded here. This file is maintained by hand; it i
 - Kept audio files in the browser; no upload service or server-side processing was added.
 - Documented the limits of ordinary music: recognizable pictures work best with audio designed for oscilloscope/vector displays.
 
+## Version 2.0 — live audio, shape presets, and motion controls
+
+- Added ten built-in shape presets that draw a phosphor trace and play a synthesized tone.
+- Added microphone-reactive XY traces, device-orientation control, and direct internet-radio stream playback where browser CORS rules allow it.
+- Added an embedded YouTube preview. Protected YouTube audio is not read directly; the microphone can visualize sound picked up from the device speakers.
+
 ## Version 2.0 — audio playback and multi-stroke refinements
 
 - Added a dedicated output-volume slider and more informative playback status, including likely silent-source and browser audio-context issues.
