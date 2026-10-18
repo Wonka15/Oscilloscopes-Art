@@ -212,7 +212,8 @@ $('gyroBtn').addEventListener('click',async()=>{
  }catch(error){$('liveStatus').textContent='Motion control unavailable: '+error.message}
 });
 function handleOrientation(event){state.gyroBeta=Number(event.beta)||0;state.gyroGamma=Number(event.gamma)||0}
-\n// DRAW-TO-SOUND STUDIO
+
+// DRAW-TO-SOUND STUDIO
 // The pad stores points in normalized 0..1 coordinates so it works on any screen size.
 const drawPad=$('drawPad'),drawCtx=drawPad.getContext('2d');
 function paintDrawingPad(){
