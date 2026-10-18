@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+  Oscilloscopes Art — Version 2.0 / Vector Lab
+  A standalone 2D oscilloscope-style drawing experience built with Canvas 2D.
+  The comments explain the signal state, drawing pipeline, and UI event handlers for new contributors.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -7,6 +12,7 @@
 <meta name="description" content="Oscilloscopes Art — an interactive retro-futurist oscilloscope you can play with in your browser.">
 <title>Oscilloscopes Art — Vector Lab</title>
 <style>
+/* DESIGN SYSTEM: shared colors, typography, spacing, and responsive instrument layout. */
 :root{color-scheme:dark;--bg:#101411;--panel:#1b211d;--panel2:#242d27;--line:#3c4b40;--green:#baff7b;--mint:#6affb0;--cream:#e5e4d4;--muted:#8d9c8e;--orange:#ffb66d}
 *{box-sizing:border-box}html{min-height:100%;background:var(--bg)}body{margin:0;background:radial-gradient(ellipse at 50% 5%,#25352a 0,#101411 60%);color:var(--cream);font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace;letter-spacing:.015em;min-height:100vh}
 button,input,select{font:inherit}button{cursor:pointer}
@@ -28,9 +34,11 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 </style>
 </head>
 <body>
+<!-- Page shell: instrument display on the left, accessible controls on the right. -->
 <div class="wrap">
 <header><div class="brand"><div class="mark">⌁</div><div><div class="eyebrow">Wonka15 · Interactive lab</div><h1>OSCILLOSCOPES ART</h1></div></div><div class="live"><span class="dot" id="liveDot"></span><span id="liveLabel">SIGNAL RUNNING</span></div></header>
-<section class="intro"><div><h2>Shape the signal.</h2><p>A little analog soul, a lot of glowing math. Tune the controls and explore the patterns an oscilloscope can draw.</p></div><div class="edition">VECTOR LAB / 001</div></section>
+<section class="intro"><div><h2>Shape the signal.</h2><p>A little analog soul, a lot of glowing math. Tune the controls and explore the patterns an oscilloscope can draw.</p></div><div class="edition">VECTOR LAB / VERSION 2.0</div></section>
+<!-- Main interactive lab: the canvas is the instrument screen; controls update its signal state. -->
 <main class="lab">
 <div class="instrument-shell"><section class="instrument" aria-label="Interactive oscilloscope instrument">
 <div class="instrument-top"><div class="model">V-03 / VECTOR DISPLAY</div><button class="power" id="powerBtn" aria-pressed="true">POWER ON</button></div>
@@ -51,24 +59,45 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <footer><span>OSCILLOSCOPES ART · BUILT FOR THE CURIOUS</span><span class="foot-status" id="status">● SIGNAL LOCKED</span><span>WEB SIMULATION · NOT TEST EQUIPMENT</span></footer>
 </div>
 <script>
+/*
+ * VECTOR LAB CONTROLLER
+ * 1. Read the canvas and UI elements.
+ * 2. Keep signal settings in one state object.
+ * 3. Draw a grid, calculate waveform points, and paint the trace.
+ * 4. Wire controls to state updates and start the animation loop.
+ */
 (function(){
+// Canvas 2D draws the phosphor grid and trace. The screen element supplies the responsive drawing size.
 const canvas=document.getElementById('trace'),ctx=canvas.getContext('2d'),screen=document.getElementById('screen');
+// Shorthand for looking up a page element by its unique HTML id.
 const $=id=>document.getElementById(id);
+// All interactive values live here. Event handlers update this object; drawing functions read it.
 const state={mode:'lissajous',freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',colorName:'Phosphor green',power:true,paused:false,time:0,last:0};
 let width=0,height=0,dpr=1,raf=0;
+/** Resize the canvas for the current screen size and device pixel ratio to keep the trace crisp. */
 function resize(){const r=screen.getBoundingClientRect();dpr=Math.min(window.devicePixelRatio||1,2);width=Math.max(1,r.width);height=Math.max(1,r.height);canvas.width=Math.round(width*dpr);canvas.height=Math.round(height*dpr);ctx.setTransform(dpr,0,0,dpr,0,0);drawGrid()}
+/** Paint the dark CRT background, measurement grid, and center axes. */
 function drawGrid(){ctx.clearRect(0,0,width,height);ctx.fillStyle='#071009';ctx.fillRect(0,0,width,height);ctx.lineWidth=1;ctx.strokeStyle='#4a8b4b28';for(let i=0;i<=10;i++){let x=width*i/10;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,height);ctx.stroke()}for(let i=0;i<=8;i++){let y=height*i/8;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}ctx.strokeStyle='#72b56d55';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(width/2,0);ctx.lineTo(width/2,height);ctx.moveTo(0,height/2);ctx.lineTo(width,height/2);ctx.stroke()}
+/** Calculate [x, y] points for the selected waveform without drawing them yet. */
 function points(t){const pts=[],n=state.mode==='sine'||state.mode==='square'||state.mode==='triangle'?900:1100;const cx=width/2,cy=height/2,rx=width*.43*state.amp,ry=height*.39*state.amp,ph=state.phase*Math.PI/180;for(let i=0;i<=n;i++){const u=i/n;let x,y;switch(state.mode){case'lissajous':x=cx+rx*Math.sin(2*Math.PI*(2*u)+t*.38);y=cy+ry*Math.sin(2*Math.PI*(3*u)+ph+t*.38);break;case'circle':x=cx+rx*Math.cos(2*Math.PI*u+t*.32);y=cy+ry*Math.sin(2*Math.PI*u+t*.32);break;case'spiral':{const a=2*Math.PI*(3*u)+t*.28,r=.04+.96*u;x=cx+rx*r*Math.cos(a);y=cy+ry*r*Math.sin(a);break}case'sine':{x=width*u;y=cy-ry*Math.sin(2*Math.PI*(state.freq/30)*u+t*.65+ph)*.85;break}case'square':{x=width*u;const s=Math.sin(2*Math.PI*(state.freq/30)*u+t*.65+ph);y=cy-ry*(s>=0?1:-1)*.8;break}case'triangle':{x=width*u;const z=((state.freq/30)*u+t*.1+ph/(2*Math.PI))%1;y=cy-ry*(1-4*Math.abs(z-.5))*.85;break}}pts.push([x,y])}return pts}
+/** Render the calculated points with a soft phosphor glow and a sharper center line. */
 function strokeTrace(t){const pts=points(t),c=state.color;ctx.save();ctx.globalCompositeOperation='lighter';ctx.lineJoin='round';ctx.lineCap='round';ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.strokeStyle=c;ctx.globalAlpha=.12+state.glow/260;ctx.lineWidth=7+state.glow*.055;ctx.shadowColor=c;ctx.shadowBlur=8+state.glow*.23;ctx.stroke();ctx.beginPath();pts.forEach((p,i)=>i?ctx.lineTo(p[0],p[1]):ctx.moveTo(p[0],p[1]));ctx.globalAlpha=.4+state.glow/170;ctx.lineWidth=1.25;ctx.shadowBlur=4+state.glow*.16;ctx.stroke();ctx.restore()}
+/** Animation-frame callback: advance time when enabled, redraw the grid/trace, then schedule the next frame. */
 function render(now){if(!state.last)state.last=now;const dt=Math.min((now-state.last)/1000,.05);state.last=now;if(!state.paused&&state.power)state.time+=dt*Math.max(.18,state.freq/60);drawGrid();if(state.power)strokeTrace(state.time);raf=requestAnimationFrame(render)}
+/** Keep numeric readouts and the instrument's small display labels synchronized with state. */
 function updateLabels(){$('freqOut').textContent=Number(state.freq).toFixed(1)+' Hz';$('ampOut').textContent=state.amp.toFixed(2)+' V';$('phaseOut').textContent=state.phase+'°';$('glowOut').textContent=state.glow+'%';$('screenHz').textContent=Number(state.freq).toFixed(1)+' HZ';$('readout').textContent='A: '+state.amp.toFixed(2)+' V · PH: '+state.phase+'°';}
+/** Select a waveform mode and update the active button and status label. */
 function setMode(mode){state.mode=mode;document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode===mode));$('status').textContent='● '+mode.toUpperCase()+' MODE';}
+// Signal tuning controls: sliders change state first, then refresh the displayed values.
 $('freq').addEventListener('input',e=>{state.freq=+e.target.value;updateLabels()});$('amp').addEventListener('input',e=>{state.amp=+e.target.value;updateLabels()});$('phase').addEventListener('input',e=>{state.phase=+e.target.value;updateLabels()});$('glow').addEventListener('input',e=>{state.glow=+e.target.value;updateLabels()});
+// Mode and color buttons use event delegation, so one listener handles the whole button group.
 $('modes').addEventListener('click',e=>{const b=e.target.closest('[data-mode]');if(b)setMode(b.dataset.mode)});
 $('colors').addEventListener('click',e=>{const b=e.target.closest('[data-color]');if(!b)return;state.color=b.dataset.color;state.colorName=b.dataset.name;$('colorName').textContent=state.colorName;document.querySelectorAll('.swatch').forEach(s=>s.classList.toggle('active',s===b))});
+// Power, pause, and save controls change the instrument's visible behavior.
 $('powerBtn').addEventListener('click',()=>{state.power=!state.power;$('powerBtn').classList.toggle('off',!state.power);$('powerBtn').textContent=state.power?'POWER ON':'POWER OFF';$('powerBtn').setAttribute('aria-pressed',String(state.power));$('screenOff').classList.toggle('show',!state.power);$('liveLabel').textContent=state.power?'SIGNAL RUNNING':'STANDBY';$('liveDot').style.background=state.power?'var(--mint)':'#566257';$('status').textContent=state.power?'● SIGNAL LOCKED':'○ OUTPUT MUTED';if(!state.power){ctx.clearRect(0,0,width,height)}});
 $('pauseBtn').addEventListener('click',()=>{state.paused=!state.paused;$('pauseBtn').innerHTML=state.paused?'▶ &nbsp; Resume trace':'Ⅱ &nbsp; Pause trace';$('status').textContent=state.paused?'Ⅱ TRACE PAUSED':'● SIGNAL LOCKED'});
 $('saveBtn').addEventListener('click',()=>{const a=document.createElement('a');a.download='oscilloscopes-art-'+state.mode+'.png';a.href=canvas.toDataURL('image/png');a.click();$('status').textContent='↓ SCREEN EXPORTED'});
+// Start-up sequence: size the canvas, show the initial readouts, and begin animation.
 window.addEventListener('resize',resize);resize();updateLabels();raf=requestAnimationFrame(render);
 })();
 </script>

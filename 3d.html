@@ -1,4 +1,9 @@
 <!doctype html>
+<!--
+  Oscilloscopes Art — Version 2.0
+  Interactive 3D workbench, oscilloscope controls, simulated SEM viewer, and audio tools.
+  The comments throughout this file explain the purpose of each subsystem and key decisions.
+-->
 <html lang="en">
 <head>
 <meta charset="utf-8">
@@ -6,10 +11,11 @@
 <meta name="theme-color" content="#17162b">
 <title>Oscilloscopes Art — 3D Bench</title>
 <style>
+/* Theme tokens and the main 3D bench layout. Keep shared colors here when possible. */
 :root{color-scheme:dark;--bg:#17162b;--panel:#25243b;--line:#7775a0;--green:#c9c4ff;--muted:#c1c2dc;--cream:#f4f2ff}
 *{box-sizing:border-box}body{margin:0;background:radial-gradient(ellipse at 50% 0,#29392c,#101411 62%);color:var(--cream);font:13px ui-monospace,SFMono-Regular,Menlo,monospace}button,input{font:inherit}button{cursor:pointer}.app{max-width:1400px;margin:auto;padding:18px}.head{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:15px}.eyebrow{font-size:10px;letter-spacing:.18em;color:var(--green)}h1{font-size:clamp(18px,3vw,27px);margin:5px 0 0;letter-spacing:-.04em}.tag{font-size:10px;border:1px solid var(--line);border-radius:20px;padding:9px 12px;color:var(--muted)}.layout{display:grid;grid-template-columns:minmax(0,1fr) 300px;gap:14px}.stage{height:min(72vh,760px);min-height:430px;border:1px solid #3b4b3e;border-radius:16px;overflow:hidden;position:relative;background:radial-gradient(ellipse at 50% 42%,#29352b,#111713 70%);box-shadow:0 20px 70px #0008}.stage canvas{display:block;width:100%;height:100%;touch-action:none}.power-overlay{position:absolute;top:58px;right:14px;z-index:3;min-width:170px;font-size:11px}.power-caption{position:absolute;top:105px;right:14px;z-index:3;padding:8px 11px;border-radius:10px;background:#15172ae8;border:1px solid #ffffff38;color:#f0efff;font-size:11px;font-weight:650;letter-spacing:.035em;backdrop-filter:blur(16px);-webkit-backdrop-filter:blur(16px)}.stage-hint{position:absolute;bottom:12px;left:14px;font-size:10px;color:#9eae9d;background:#101711c9;padding:9px 11px;border:1px solid #ffffff14;border-radius:7px;pointer-events:none}.badge{position:absolute;top:13px;left:14px;font-size:10px;letter-spacing:.12em;color:var(--green);background:#101711d9;padding:9px 11px;border:1px solid #baff7b35;border-radius:7px;pointer-events:none}.panel{display:flex;flex-direction:column;gap:11px}.card{border:1px solid var(--line);border-radius:12px;background:linear-gradient(145deg,#202922,#171d19);padding:14px}.title{display:flex;justify-content:space-between;gap:8px;font-size:10px;letter-spacing:.15em;color:var(--muted);text-transform:uppercase;margin-bottom:13px}.title b{font-weight:500;color:var(--cream)}.control{margin:13px 0}.row{display:flex;justify-content:space-between;gap:8px;margin-bottom:8px;font-size:11px}.val{color:var(--green);font-variant-numeric:tabular-nums}.range{width:100%;accent-color:var(--green)}.buttons{display:grid;grid-template-columns:1fr 1fr;gap:7px}.btn{border:1px solid #465848;background:#28352b;color:#e0e8dc;border-radius:8px;padding:10px 8px;font-size:10px}.btn.primary{background:var(--green);color:#101810;border-color:var(--green);font-weight:bold}.btn:disabled{opacity:.5;cursor:wait}.note{font-size:10px;line-height:1.6;color:#89998a;margin:10px 0 0}.status{font-size:10px;color:var(--green);line-height:1.6}.footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;color:#718173;font-size:9px;margin-top:13px}.back{color:var(--green);text-decoration:none}.swatches{display:flex;gap:8px}.swatch{width:27px;height:27px;border-radius:50%;border:2px solid #29372b;background:var(--c);outline:1px solid #657565}.swatch.active{outline:2px solid var(--c)}@media(max-width:850px){.layout{grid-template-columns:1fr}.stage{height:55vh;min-height:340px}.panel{display:grid;grid-template-columns:1fr 1fr;align-items:start}.panel .card:last-child{grid-column:1/-1}}@media(max-width:520px){.app{padding:12px}.stage{height:49vh;min-height:310px}.panel{grid-template-columns:1fr}.panel .card:last-child{grid-column:auto}.tag{display:none}.head{align-items:flex-start}}
 
-/* Virtual SEM sample viewer */
+/* Virtual SEM sample viewer: responsive layout for the simulated microscope and its controls. */
 .sem-lab{margin-top:16px;border:1px solid #3b4b3e;border-radius:16px;padding:16px;background:linear-gradient(145deg,#202922,#131a15);box-shadow:0 18px 55px #0005}
 .sem-lab-head{display:flex;justify-content:space-between;align-items:flex-start;gap:12px;margin-bottom:14px}.sem-lab-head h2{font-size:clamp(16px,2.5vw,22px);margin:5px 0}.sem-grid{display:grid;grid-template-columns:minmax(0,2fr) minmax(240px,.72fr);gap:14px;align-items:start}.sem-screen{min-height:500px;height:clamp(500px,54vw,720px);position:relative;overflow:hidden;border:1px solid #526052;border-radius:10px;background:#050806;box-shadow:inset 0 0 35px #8dff7b12,0 0 0 1px #000}.sem-screen canvas{display:block;width:100%;height:100%;min-height:500px;object-fit:fill}.sem-screen-top,.sem-screen-bottom{position:absolute;left:12px;right:12px;display:flex;justify-content:space-between;gap:10px;color:#caffaa;font-size:10px;text-shadow:0 1px 4px #000;background:#071008a8;padding:8px;border-radius:5px;pointer-events:none}.sem-screen-top{top:10px}.sem-screen-bottom{bottom:10px}.sem-sample-control{grid-column:1/-1}.sem-sample-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}.sem-sample-btn{border:1px solid #394b3b;background:#121a14;color:#b5c4b2;border-radius:7px;padding:9px 6px;font:10px ui-monospace,monospace;text-align:left;min-height:36px;cursor:pointer;transition:background .15s,border-color .15s,color .15s}.sem-sample-btn:hover{border-color:#8bbd72;color:#efffe5}.sem-sample-btn.active{background:#baff7b;color:#101810;border-color:#baff7b;font-weight:bold}.sem-sample-control #semSample{position:absolute;width:1px;height:1px;opacity:0;pointer-events:none}.sem-controls{display:grid;grid-template-columns:1fr 1fr;gap:8px}.sem-controls .control{margin:5px 0 10px}.sem-controls select{width:100%;text-align:left}.sem-statgrid{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-top:10px}.sem-stat{padding:10px;border:1px solid #344537;border-radius:7px;background:#101711}.sem-stat span{display:block;font-size:9px;color:#8fa28e;margin-bottom:6px}.sem-stat b{color:#caffaa;font-size:13px;font-weight:500}.sem-scanline{height:2px;position:absolute;left:0;right:0;top:0;background:#caffaa;opacity:.75;box-shadow:0 0 14px #aaff78;pointer-events:none}.sem-disclaimer{color:#a7b5a5;font-size:10px;line-height:1.65;margin:12px 0 0}.sem-source{color:#baff7b;text-decoration:none}.sem-toggle{display:flex;align-items:center;gap:8px;font-size:10px;color:#a7b5a5;margin-top:8px}.sem-toggle input{accent-color:#baff7b}@media(max-width:850px){.sem-grid{grid-template-columns:1fr}.sem-screen{height:clamp(420px,72vw,620px);min-height:420px}.sem-screen canvas{min-height:420px}.sem-controls{grid-template-columns:1fr 1fr}}@media(max-width:520px){.sem-lab{padding:11px}.sem-screen{height:420px;min-height:420px}.sem-screen canvas{min-height:420px}.sem-controls{grid-template-columns:1fr 1fr}.sem-lab-head{display:block}}
 
@@ -58,8 +64,10 @@ body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),ra
 .power-overlay:focus-visible{outline:3px solid #f5eaff;outline-offset:3px}
 </style>
 </head>
-<body><div class="app">
-<header class="head"><div><div class="eyebrow">WONKA15 · INTERACTIVE OBJECT LAB</div><h1>OSCILLOSCOPES ART / 3D BENCH</h1></div><div class="tag">REAL-TIME MESH · AR EXPORT</div></header>
+<body>
+<!-- Main 3D workbench: the stage renders the Three.js scene; the side panel controls it. -->
+<div class="app">
+<header class="head"><div><div class="eyebrow">WONKA15 · INTERACTIVE OBJECT LAB</div><h1>OSCILLOSCOPES ART / 3D BENCH</h1></div><div class="tag">VERSION 2.0 · REAL-TIME MESH · AR EXPORT</div></header>
 <div class="layout"><section class="stage" id="stage"><div class="badge">V-03 OSCILLOSCOPE + JEOL JSM-5200 SEM · 3D LAB</div><div class="stage-hint">DRAG TO ORBIT · SCROLL TO ZOOM · DRAG A KNOB TO TURN IT</div><button class="btn primary power-overlay" id="powerToggle" type="button" aria-pressed="false" aria-label="Turn Jacob’s ladder simulation on">⚡ JACOB’S LADDER · OFF</button><div class="power-caption" id="powerCaption">SIMULATED POWER CIRCUIT · OFF</div></section>
 <aside class="panel">
 <section class="card"><div class="title"><b>Signal controls</b><span>01</span></div>
@@ -88,6 +96,7 @@ body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),ra
 <p class="note" id="exportNote">AR support depends on your browser/device. On iPad, Export USDZ can open the model in Apple's AR Quick Look when supported. GLB is a portable 3D mesh file.</p><p class="status" id="status">● 3D scene initializing…</p>
 </section></aside></div>
 
+<!-- SEM (scanning electron microscope) sample viewer. All textures here are illustrative simulations. -->
 <section class="sem-lab" id="virtualSemLab">
   <div class="sem-lab-head"><div><div class="eyebrow">SPECIMEN BAY · LIVE SCAN SIMULATOR</div><h2>Virtual SEM / Specimen Explorer</h2><div class="note">Select a specimen to explore distinct microstructures. The viewer simulates SEM-style surface details; these are illustrative renderings, not captured micrographs or measurements.</div></div><div class="tag">SIMULATED DETECTOR</div></div>
   <div class="sem-grid">
@@ -131,13 +140,26 @@ body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),ra
 {"imports":{"three":"https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js","three/addons/":"https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"}}
 </script>
 <script type="module">
+/*
+ * 3D application entry point.
+ * Imports are browser ES modules, loaded from the import map above.
+ * High-level order: scene setup -> reusable mesh helpers -> equipment models -> controls/audio -> render loop -> SEM simulator.
+ */
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
 import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {USDZExporter} from 'three/addons/exporters/USDZExporter.js';
+
+// Small DOM helper: $('freq') is shorthand for document.getElementById('freq').
 const $=id=>document.getElementById(id), stage=$('stage');
+
+// One source of truth for the oscilloscope's adjustable signal settings.
+// The HTML controls and the physical 3D knobs both update this object.
+
 const state={freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',mode:'lissajous',paused:false};
+// Create the Three.js world, camera, renderer, orbit controls, and studio lighting.
+// Keeping this setup together makes it easier to tune the overall look of the scene.
 const scene=new THREE.Scene();scene.background=new THREE.Color('#141b15');scene.fog=new THREE.Fog('#141b15',10,24);
 const camera=new THREE.PerspectiveCamera(42,1,.1,100);camera.position.set(8.8,5.8,13.6);
 const renderer=new THREE.WebGLRenderer({antialias:true,preserveDrawingBuffer:true});renderer.setPixelRatio(Math.min(devicePixelRatio,2));renderer.outputColorSpace=THREE.SRGBColorSpace;renderer.toneMapping=THREE.ACESFilmicToneMapping;renderer.toneMappingExposure=1.18;stage.prepend(renderer.domElement);
@@ -145,9 +167,12 @@ const orbit=new OrbitControls(camera,renderer.domElement);orbit.target.set(2.7,.
 scene.add(new THREE.HemisphereLight(0xdcebd8,0x25291f,2.1));
 const key=new THREE.DirectionalLight(0xffe3b4,3.1);key.position.set(3,7,5);scene.add(key);
 const rim=new THREE.PointLight(0x86ff9b,18,9);rim.position.set(-3,3,2);scene.add(rim);
+// Material factory keeps the many workbench parts consistent and avoids repeated setup.
 const mat=(color,rough=.5,metal=0)=>new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
 const dark=mat('#18211b',.35,.62), edge=mat('#526052',.32,.7), rubber=mat('#101411',.8), ivory=mat('#c9d0bc',.45,.25), wood=mat('#66472f',.65), wood2=mat('#3a2a20',.72), green= new THREE.MeshStandardMaterial({color:state.color,emissive:state.color,emissiveIntensity:1.7,roughness:.25});
+// All physical workbench objects live under this group. This makes the model easier to manage.
 const root=new THREE.Group();scene.add(root);
+/** Create a named box mesh. `pos` and `size` are [x, y, z] arrays; `bevel` optionally softens the edges. */
 function box(parent,name,pos,size,material,bevel=0){
  // Use a real rounded-box mesh only when a bevel is requested. This softens major
  // instrument edges without adding unnecessary geometry to every tiny detail.
@@ -155,7 +180,9 @@ function box(parent,name,pos,size,material,bevel=0){
  const g=radius>0?new RoundedBoxGeometry(size[0],size[1],size[2],3,radius):new THREE.BoxGeometry(...size);
  const m=new THREE.Mesh(g,material);m.name=name;m.position.set(...pos);parent.add(m);return m
 }
+/** Create a named cylinder mesh at `pos`; radius, height, and material control its appearance. */
 function cylinder(parent,name,pos,radius,depth,material,segments=40){const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,depth,segments),material);m.name=name;m.rotation.x=Math.PI/2;m.position.set(...pos);parent.add(m);return m}
+/** Build readable 3D text as geometry so labels stay attached to the equipment in the scene. */
 function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){
  // Build a text texture whose aspect ratio follows the label length. This keeps
  // labels crisp without squashing wide words or stretching short ones.
@@ -273,8 +300,10 @@ for(let i=0;i<=8;i++){let y=-.72+i*.18;let a=new THREE.Vector3(-1.19,y,0),b=new 
 const axisMat=new THREE.LineBasicMaterial({color:0x75bc6d,transparent:true,opacity:.7});
 grid.add(new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(0,-.77,0),new THREE.Vector3(0,.77,0)]),axisMat),new THREE.Line(new THREE.BufferGeometry().setFromPoints([new THREE.Vector3(-1.22,0,0),new THREE.Vector3(1.22,0,0)]),axisMat));
 const traceGeo=new THREE.BufferGeometry();const tracePositions=new Float32Array(1200*3);traceGeo.setAttribute('position',new THREE.BufferAttribute(tracePositions,3));const traceMat=new THREE.LineBasicMaterial({color:state.color,transparent:true,opacity:.96});const trace=new THREE.Line(traceGeo,traceMat);trace.frustumCulled=false;trace.position.z=.015;grid.add(trace);
+// OSCILLOSCOPE FRONT PANEL: the screen grid, glowing trace, physical knobs, switches, and jacks.
 // Knobs, with ticks and pointers
 const knobs=[];
+/** Build a physical-looking rotary knob and register it so pointer dragging can change a signal control. */
 function makeKnob(name,x,y,r,control){const g=new THREE.Group();g.name=name;g.position.set(x,y,.55);instrument.add(g);cylinder(g,name+' base',[0,0,0],r*1.18,.09,dark);cylinder(g,name+' dial',[0,0,.065],r,.14,mat('#303a32',.3,.45));cylinder(g,name+' cap',[0,0,.145],r*.68,.025,mat('#677466',.26,.48));const pointer=box(g,name+' pointer',[0,r*.39,.166],[.035,r*.33,.018],mat('#c9ff98',.25,.2));pointer.rotation.z=.15;for(let i=0;i<11;i++){const a=(-.78+i*.156);const tick=box(g,name+' tick',[Math.sin(a)*r*1.38,Math.cos(a)*r*1.38,.015],[.018,.07,.014],ivory);tick.rotation.z=-a}g.userData={control,pointer,baseRot:0};knobs.push(g);return g}
 makeKnob('Frequency knob',1.52,.22,.24,'freq');makeKnob('Amplitude knob',1.52,-.35,.21,'amp');makeKnob('Phase knob',1.52,-.88,.21,'phase');
 // Switches and cable jacks
@@ -282,10 +311,11 @@ const scopeButtons=[];
 for(let i=0;i<3;i++){const b=cylinder(instrument,'Scope push button '+(i+1),[1.02-i*.34,-1.02,.55],.065,.08,mat(i===0?'#d2a45d':'#39463b',.25,.4),24);b.userData={scopeAction:['pause','reset','mode'][i],pressZ:b.position.z};scopeButtons.push(b)}
 for(let i=0;i<2;i++){cylinder(instrument,'BNC connector',[-1.65+i*.35,-1.03,.56],.11,.12,edge);cylinder(instrument,'BNC dark center',[-1.65+i*.35,-1.03,.63],.055,.02,rubber)}
 // Flexible oscilloscope leads: routed over the tabletop, then over its front edge and down outside the table mesh.
+/** Draw a smooth flexible lead through a list of 3D points using a curved tube. */
 function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p=>new THREE.Vector3(...p)));const mesh=new THREE.Mesh(new THREE.TubeGeometry(curve,100,.035,10,false),mat(color,.3,.2));mesh.name='Visible oscilloscope cable';root.add(mesh);return mesh}
 // Oscilloscope leads intentionally removed at user request.
 
-// Raised instrument shelf and fully simulated power-distribution demo.
+// POWER SHELF: outlet housings, converter, insulated supports, and the visual-only Jacob's ladder demo.
 const shelfWood=mat('#493d54',.42,.35),shelfEdge=mat('#857ca4',.3,.62),powerDark=mat('#171a2b',.32,.45),powerFace=mat('#343b58',.3,.42),powerMetal=mat('#c5d6e7',.24,.78),powerBlue=mat('#85caff',.22,.2),powerAmber=mat('#ffd18b',.25,.15);
 box(root,'Raised electronics shelf',[3.55,3.02,-1.82],[11.65,.16,1.28],shelfWood,.035);
 box(root,'Shelf front metal trim',[3.55,2.94,-1.16],[11.65,.08,.055],shelfEdge);
@@ -296,6 +326,7 @@ for(const x of [-1.72,8.82]){
  box(root,'Shelf support foot plate',[x,-.105,-2.30],[.44,.09,.36],powerDark);
  box(root,'Shelf support foot trim',[x,-.052,-2.30],[.32,.025,.26],shelfEdge);
 }
+/** Convenience wrapper for placing a label on the front-facing power-panel surfaces. */
 function panelLabel(text,x,y,z,size=.075,color='#e3e7ff'){return textLabel(root,text,[x,y,z],size,color)}
 // Dual mains outlet A: visually distributes simulated power to both instruments.
 box(root,'Instrument outlet A housing',[-.95,3.31,-1.25],[1.24,.46,.12],powerFace);
@@ -328,6 +359,7 @@ box(ladder,'Jacob ladder insulated base',[ladderX,ladderY,-1.60],[1.72,.20,.82],
 box(ladder,'Jacob ladder front panel',[ladderX,ladderY+.06,-1.175],[1.58,.13,.035],powerFace);
 panelLabel('JACOB’S LADDER',ladderX,3.40,-1.145,.065,'#e4e8ff');
 panelLabel('HV SIMULATION',ladderX,3.25,-1.145,.046,'#9fdfff');
+/** Place a cylinder between two 3D points; used for the angled Jacob's-ladder electrodes. */
 function rodBetween(parent,name,a,b,r,material){const va=new THREE.Vector3(...a),vb=new THREE.Vector3(...b),dir=new THREE.Vector3().subVectors(vb,va);const mesh=new THREE.Mesh(new THREE.CylinderGeometry(r,r,dir.length(),20),material);mesh.name=name;mesh.position.copy(va).add(vb).multiplyScalar(.5);mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0,1,0),dir.normalize());parent.add(mesh);return mesh}
 // Electrode tips rise well above the shelf equipment; the gap is widest at the top.
 rodBetween(ladder,'Left rising electrode',[5.98,3.24,-1.48],[5.55,5.12,-1.48],.038,powerMetal);
@@ -351,6 +383,7 @@ const arcLine=new THREE.Line(arcGeo,arcMat);arcLine.name='Horizontal purple simu
 const glowGeo=new THREE.BufferGeometry();glowGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array((ARC_SEGMENTS+1)*3),3));const glowLine=new THREE.Line(glowGeo,arcGlowMat);glowLine.frustumCulled=false;glowLine.visible=false;ladder.add(glowLine);
 const arcLight=new THREE.PointLight(0xb76aff,0,4.8);arcLight.position.set(ladderX,3.58,-1.25);scene.add(arcLight);
 let ladderPowered=false;
+/** Toggle the educational arc effect and keep the button, switch, and status text in sync. */
 function setLadderPower(on){
  ladderPowered=!!on;arcLine.visible=ladderPowered;glowLine.visible=ladderPowered;
  arcLight.intensity=ladderPowered?3.5:0;switchCap.material=ladderPowered?powerBlue:powerAmber;
@@ -362,6 +395,7 @@ function setLadderPower(on){
 }
 $('powerToggle').addEventListener('click',()=>setLadderPower(!ladderPowered));
 // A horizontal purple arc spans the diverging electrodes and travels upward like a classic Jacob's ladder.
+/** Animate the simulated arc along the diverging electrodes; this is visual only, not real voltage. */
 function updateLadder(t){
  if(!ladderPowered)return;
  const p=arcGeo.attributes.position.array,g=glowGeo.attributes.position.array;
@@ -384,6 +418,7 @@ function updateLadder(t){
  arcMat.opacity=.68+.32*(.5+.5*Math.sin(t*83));arcGlowMat.opacity=.42+.55*(.5+.5*Math.sin(t*39));
 }
 // Physical jack plugs seated in the outlet face; the lead begins at each plug body.
+/** Add a single simulated outlet plug to the power-distribution display. */
 function outletJack(name,x,y,z,color){const plug=new THREE.Mesh(new THREE.CylinderGeometry(.055,.055,.14,20),mat(color,.24,.42));plug.name=name;plug.rotation.x=Math.PI/2;plug.position.set(x,y,z);root.add(plug);const collar=new THREE.Mesh(new THREE.CylinderGeometry(.073,.073,.035,20),powerMetal);collar.name=name+' locking collar';collar.rotation.x=Math.PI/2;collar.position.set(x,y,z+.055);root.add(collar)}
 // Removed the stray oscilloscope-side plug; SEM power jack remains.
 outletJack('Electron microscope outlet jack',-.71,3.33,-1.075,'#b8dfff');
@@ -396,7 +431,7 @@ cable([[3.48,3.32,-1.57],[3.72,3.22,-1.40],[3.95,3.145,-1.25],[4.72,3.145,-1.25]
 panelLabel('SIMULATED POWER PATHS · EDUCATIONAL ONLY',3.55,2.94,-1.12,.045,'#f1edff');
 setLadderPower(false);
 
-// Small bench props: a properly upright solder spool and screwdriver.
+// WORKBENCH PROPS: small objects add scale and make the bench feel like a real electronics workspace.
  // The tabletop top is y = -0.12. These vertical spool parts sit just above it,
  // rather than lying on their sides or passing through the tabletop.
 const solderSpool=new THREE.Group();
@@ -425,10 +460,12 @@ for(let turn=0;turn<7;turn++){
 }
 const driver=box(root,'Screwdriver handle',[2.8,-.04,-1.55],[.18,.18,.68],mat('#bf7d40',.4,.2));driver.rotation.y=.32;
 const shaft=box(root,'Screwdriver shaft',[2.55,-.06,-1.2],[.045,.045,.45],edge);shaft.rotation.y=.32;
-// Add mesh waveform line
+// AUDIO INPUT: local audio-file, optional radio-stream, and microphone-analysis connections.
+// Audio is analysed in the browser; microphone data is not uploaded by this page.
 let audioAnalyser=null,audioData=null,audioCtx=null,audioElement=null,audioSource=null,audioObjectUrl=null;
 // Separate microphone input can analyse radio audio from the room if direct stream access is blocked.
 let micCtx=null,micAnalyser=null,micData=null,micStream=null,micSource=null;
+/** Connect a user-selected audio element to Web Audio analysis when browser permissions allow it. */
 async function connectAudioElement(el){
   try{
     if(audioCtx){try{await audioCtx.close()}catch{}}
@@ -511,7 +548,9 @@ $('radioConnect').addEventListener('click',async()=>{
   }
   catch(e){console.warn(e);$('audioStatus').textContent='Radio is ready. Tap Play audio to start the stream.'}
 });
+/** Rebuild the oscilloscope trace geometry from the current signal settings or live audio samples. */
 function updateTrace(t=0){const arr=traceGeo.attributes.position.array,N=1200,phase=state.phase*Math.PI/180;let liveAudio=false;const activeAnalyser=micAnalyser||audioAnalyser,activeData=micAnalyser?micData:audioData;let peak=0;if(activeAnalyser&&activeData){activeAnalyser.getByteTimeDomainData(activeData);let energy=0;for(let j=0;j<activeData.length;j+=8){const sample=Math.abs(activeData[j]-128)/128;energy+=sample;peak=Math.max(peak,sample)}liveAudio=Boolean(micAnalyser)||energy/Math.ceil(activeData.length/8)>.012;}for(let i=0;i<N;i++){const u=i/(N-1);let x=0,y=0;if(liveAudio){x=(u-.5)*2.3;const sample=(activeData[Math.floor(u*(activeData.length-1))]-128)/128;const gain=micAnalyser?Math.min(4.5,.85/Math.max(.12,peak)):1.0;y=sample*gain*.88*state.amp;}else if(audioElement&&!audioElement.paused){x=(u-.5)*2.3;const pulse=Math.sin(2*Math.PI*(2.3*u)+t*2.2)+.42*Math.sin(2*Math.PI*(5.1*u)-t*3.7)+.22*Math.sin(2*Math.PI*(9*u)+t*1.3);const beat=Math.sin(t*3.1+Math.sin(t*.7));y=.27*state.amp*pulse*(.72+.28*beat);}else switch(state.mode){case'lissajous':x=1.08*state.amp*Math.sin(2*Math.PI*2*u+t*.45);y=.68*state.amp*Math.sin(2*Math.PI*3*u+phase+t*.45);break;case'circle':x=1.04*state.amp*Math.cos(2*Math.PI*u+t*.3);y=.68*state.amp*Math.sin(2*Math.PI*u+t*.3);break;case'spiral':{const a=6*Math.PI*u+t*.25,r=.03+.97*u;x=1.1*state.amp*r*Math.cos(a);y=.72*state.amp*r*Math.sin(a);break}case'sine':x=(u-.5)*2.3;y=.65*state.amp*Math.sin(2*Math.PI*(2+state.freq/40)*u+t);break;case'triangle':x=(u-.5)*2.3;y=.65*state.amp*(2/Math.PI)*Math.asin(Math.sin(2*Math.PI*3*u+t));break;case'square':x=(u-.5)*2.3;y=.55*state.amp*Math.sign(Math.sin(2*Math.PI*3*u+t));break}arr[i*3]=x;arr[i*3+1]=y;arr[i*3+2]=0}traceGeo.attributes.position.needsUpdate=true;traceGeo.computeBoundingSphere();traceMat.color.set(state.color);traceMat.opacity=.3+state.glow/140;traceMat.linewidth=1;green.color.set(state.color);green.emissive.set(state.color)}
+/** Refresh on-screen readouts so labels always match the current signal state. */
 function updateUI(){for(const k of ['freq','amp','phase','glow'])$(k+'Val').textContent=k==='freq'?Number(state.freq).toFixed(1)+' Hz':k==='amp'?Number(state.amp).toFixed(2)+' V':k==='phase'?Math.round(state.phase)+'°':Math.round(state.glow)+'%';for(const knob of knobs){const c=knob.userData.control;const max=c==='freq'?120:c==='amp'?1:360;const min=c==='freq'?5:c==='amp'?.2:0;const v=state[c];knob.rotation.z=-.78+(v-min)/(max-min)*1.56}updateTrace(performance.now()/1000)}
 ['freq','amp','phase','glow'].forEach(id=>$(id).addEventListener('input',e=>{state[id]=Number(e.target.value);updateUI()}));
 $('mode').addEventListener('change',e=>{state.mode=e.target.value;updateTrace()});
@@ -534,11 +573,16 @@ renderer.domElement.addEventListener('pointerdown',e=>{const r=renderer.domEleme
 });
 renderer.domElement.addEventListener('pointermove',e=>{if(!activeSemKnob)return;const dx=e.clientX-semLastX;semLastX=e.clientX;if(Math.abs(dx)<1)return;const k=activeSemKnob.userData.semControl;const id=k==='mag'?'semMag':k==='focus'?'semFocus':'semBright';const input=$(id);const scale=k==='mag'?.025:.7;input.value=String(Math.max(Number(input.min),Math.min(Number(input.max),Number(input.value)+dx*scale)));input.dispatchEvent(new Event('input'))});
 renderer.domElement.addEventListener('pointermove',e=>{if(!activeKnob)return;const dx=e.clientX-lastX;lastX=e.clientX;const c=activeKnob.userData.control;const el=$(c);const sensitivity=c==='freq'?.22:c==='amp'?.0022:.55;const target=knobTargets[c]+dx*sensitivity;knobTargets[c]=Math.max(Number(el.min),Math.min(Number(el.max),target));});
+/** Finish a knob drag and release pointer-capture state cleanly. */
 function endDrag(){if(activeKnob){knobSettling=true;activeKnob=null}if(pressedMesh){pressedMesh.position.z=pressedMesh.userData.pressZ;pressedMesh=null}activeSemKnob=null;orbit.enabled=true;renderer.domElement.style.cursor=''}renderer.domElement.addEventListener('pointerup',endDrag);renderer.domElement.addEventListener('pointercancel',endDrag);
+/** Match the WebGL drawing buffer and camera aspect ratio to the available stage size. */
 function resize(){const w=stage.clientWidth,h=stage.clientHeight;if(w<=0||h<=0)return;camera.aspect=w/h;camera.updateProjectionMatrix();renderer.setSize(w,h,false)}window.addEventListener('resize',resize);resize();updateUI();
+/** Main animation loop: update controls and animated effects, then render one frame. */
 function animate(now){requestAnimationFrame(animate);if(document.hidden)return;if(activeKnob||knobSettling){const c=(activeKnob||knobs.find(k=>k.userData.control&&Math.abs(state[k.userData.control]-knobTargets[k.userData.control])>0.0001))?.userData.control;if(c){const diff=knobTargets[c]-state[c];const minStep=c==='freq'?.015:c==='amp'?.00015:.035;if(Math.abs(diff)<minStep){state[c]=knobTargets[c];if(!activeKnob)knobSettling=false}else state[c]+=diff*.14;$(c).value=String(state[c]);updateUI()}else knobSettling=false}else if(!state.paused)updateTrace(now/1000);updateLadder(now/1000);orbit.update();renderer.render(scene,camera)}requestAnimationFrame(animate);$('status').textContent='● INTERACTIVE 3D MESH READY';
+/** Export a generated file by creating a temporary browser download link. */
 function download(blob,name){const url=URL.createObjectURL(blob);const a=document.createElement('a');a.href=url;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),15000)}
 $('glb').addEventListener('click',async()=>{try{$('glb').disabled=true;$('status').textContent='● BUILDING GLB MESH…';const ex=new GLTFExporter();const data=await ex.parseAsync(root,{binary:true,onlyVisible:true});download(new Blob([data],{type:'model/gltf-binary'}),'oscilloscopes-art-v03.glb');$('status').textContent='● GLB EXPORTED'}catch(e){console.error(e);$('status').textContent='Export failed — try again'}finally{$('glb').disabled=false}});
+/** Prepare an Apple Quick Look-compatible USDZ export when the browser supports it. */
 async function makeUSDZ(){const exporter=new USDZExporter();return await exporter.parseAsync(root,{ar:true})}
 $('usdz').addEventListener('click',async()=>{try{$('usdz').disabled=true;$('status').textContent='● PACKING USDZ MODEL…';const data=await makeUSDZ();download(new Blob([data],{type:'model/vnd.usdz+zip'}),'oscilloscopes-art-v03.usdz');$('status').textContent='● USDZ EXPORTED — OPEN FILE FOR AR'}catch(e){console.error(e);$('status').textContent='USDZ export unavailable in this browser'}finally{$('usdz').disabled=false}});
 $('ar').addEventListener('click',async()=>{try{if(navigator.xr&&await navigator.xr.isSessionSupported('immersive-ar')){const session=await navigator.xr.requestSession('immersive-ar',{requiredFeatures:['local']});renderer.xr.enabled=true;renderer.xr.setSession(session);$('status').textContent='● AR SESSION ACTIVE';session.addEventListener('end',()=>{$('status').textContent='● AR SESSION ENDED'})}else{ $('status').textContent='● PREPARING AR FILE…';const data=await makeUSDZ();const blob=new Blob([data],{type:'model/vnd.usdz+zip'});const url=URL.createObjectURL(blob);const a=document.createElement('a');a.setAttribute('rel','ar');a.href=url;a.style.display='none';const img=document.createElement('img');img.src='data:image/gif;base64,R0lGODlhAQABAAD/ACwAAAAAAQABAAACADs=';a.appendChild(img);document.body.appendChild(a);a.click();$('status').textContent='● IF QUICK LOOK DID NOT OPEN, USE EXPORT USDZ';setTimeout(()=>{a.remove();URL.revokeObjectURL(url)},60000)}}catch(e){console.error(e);$('status').textContent='AR not available here — export USDZ to try on iPad'}});
@@ -550,9 +594,12 @@ const semProcessCanvas=document.createElement('canvas');semProcessCanvas.width=s
 semImage.crossOrigin='anonymous';
 semImage.src='https://mdpi-res.com/d_attachment/molecules/molecules-25-05955/article_deploy/molecules-25-05955-g005.png';
 const semState={sample:'fly',detector:'se',mag:2,focus:82,bright:55,contrast:68,voltage:5,speed:1,paused:false,grain:true,frame:1,phase:0,loaded:false};
+// SEM SIMULATOR: specimen presets, detector modes, magnification, focus, brightness, and scan state.
+// This canvas produces illustrative textures; it does not display real microscope measurements.
 const semMagnifications=[300,1200,5000,12000,30000];
 semImage.onload=()=>{semState.loaded=true;drawSem()};
 semImage.onerror=()=>{semState.loaded=false;drawSem()};
+/** Deterministic pseudo-noise makes the simulated SEM surface texture stable between redraws. */
 function semNoise(x,y){return (Math.sin(x*12.9898+y*78.233+semState.frame*3.17)*43758.5453)%1}
 const semSampleInfo={
  fly:{label:'FLY COMPOUND EYE · OMMATIDIA',scale:['100 μm','20 μm','10 μm','5 μm','2 μm']},
@@ -580,6 +627,7 @@ const semSampleInfo={
  denim:{label:'DENIM · TWILL YARN WEAVE',scale:['1 mm','500 μm','100 μm','50 μm','10 μm']},
  bone:{label:'BONE TISSUE · OSTEONS & LACUNAE',scale:['500 μm','100 μm','50 μm','20 μm','5 μm']}
 };
+/** Draw the selected specimen's illustrative microstructure and apply detector/display settings. */
 function drawSem(){
  const w=semCanvas.width,h=semCanvas.height,ctx=semCtx,apple=['outer','inner','cross'].includes(semState.sample);
  ctx.save();ctx.clearRect(0,0,w,h);
@@ -691,7 +739,9 @@ $('semSampleButtons').addEventListener('click',e=>{const btn=e.target.closest('[
 $('semGrain').addEventListener('change',e=>{semState.grain=e.target.checked;drawSem()});
 $('semPause').addEventListener('click',()=>{semState.paused=!semState.paused;$('semPause').textContent=semState.paused?'Resume scan':'Pause scan';drawSem()});
 $('semRescan').addEventListener('click',()=>{semState.frame++;semState.phase+=27;drawSem()});
-let semLast=0,semLastFrameBucket=0;function semAnimate(now){requestAnimationFrame(semAnimate);if(document.hidden)return;if(now-semLast>60){semLast=now;if(!semState.paused){semState.phase+=semState.speed;const bucket=Math.floor(semState.phase/100);if(bucket>semLastFrameBucket){semState.frame+=bucket-semLastFrameBucket;semLastFrameBucket=bucket}const line=$('semScanline');line.style.transform='translateY('+((semState.phase%100)/100*Math.max(0,$('semScreen').clientHeight-4))+'px)';drawSem()}}}requestAnimationFrame(semAnimate);
+let semLast=0,semLastFrameBucket=0;/** Refresh the SEM scan at a modest cadence to avoid redrawing the detailed canvas every frame. */
+function semAnimate(now){requestAnimationFrame(semAnimate);if(document.hidden)return;if(now-semLast>60){semLast=now;if(!semState.paused){semState.phase+=semState.speed;const bucket=Math.floor(semState.phase/100);if(bucket>semLastFrameBucket){semState.frame+=bucket-semLastFrameBucket;semLastFrameBucket=bucket}const line=$('semScanline');line.style.transform='translateY('+((semState.phase%100)/100*Math.max(0,$('semScreen').clientHeight-4))+'px)';drawSem()}}}requestAnimationFrame(semAnimate);
+// First draw gives the SEM a useful image before the animation loop's next scheduled update.
 drawSem();
 
 </script></body></html>
