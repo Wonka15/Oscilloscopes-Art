@@ -2,6 +2,13 @@
 
 Notable project changes are recorded here. This file is maintained by hand; it is not generated from Git history.
 
+## Version 2.0 — stereo audio art studio
+
+- Added an Audio XY display mode that maps stereo left/right samples to X/Y coordinates.
+- Added two local audio layers with independent gain sliders, browser-side mixing, and play/stop controls.
+- Kept audio files in the browser; no upload service or server-side processing was added.
+- Documented the limits of ordinary music: recognizable pictures work best with audio designed for oscilloscope/vector displays.
+
 ## Version 2.0 — code clarity and documentation pass
 
 **Status:** preparing the version 2.0 milestone.
