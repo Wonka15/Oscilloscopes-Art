@@ -46,14 +46,14 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <div class="instrument-bottom"><div class="brand-stamp">VECTOR<span> / </span>LAB</div><div class="readout" id="readout">A: 1.00 V &nbsp; PH: 0°</div></div>
 </section></div>
 <aside class="controls">
-<section class="card"><div class="card-title"><strong>Signal mode</strong><span>01 / 04</span></div><div class="mode-grid" id="modes"><button class="mode active" data-mode="lissajous">Lissajous</button><button class="mode" data-mode="sine">Sine wave</button><button class="mode" data-mode="circle">Orbit</button><button class="mode" data-mode="triangle">Triangle</button><button class="mode" data-mode="square">Square</button><button class="mode" data-mode="spiral">Spiral</button><button class="mode" data-mode="audioxy">Audio XY</button></div></section>
-<section class="card"><div class="card-title"><strong>Signal tuning</strong><span>02 / 04</span></div>
+<section class="card"><div class="card-title"><strong>Signal mode</strong><span>01 / 05</span></div><div class="mode-grid" id="modes"><button class="mode active" data-mode="lissajous">Lissajous</button><button class="mode" data-mode="sine">Sine wave</button><button class="mode" data-mode="circle">Orbit</button><button class="mode" data-mode="triangle">Triangle</button><button class="mode" data-mode="square">Square</button><button class="mode" data-mode="spiral">Spiral</button><button class="mode" data-mode="audioxy">Audio XY</button></div></section>
+<section class="card"><div class="card-title"><strong>Signal tuning</strong><span>02 / 05</span></div>
 <div class="control"><div class="control-head"><label for="freq">Frequency</label><output class="value" id="freqOut">60.0 Hz</output></div><input class="range" id="freq" type="range" min="5" max="120" value="60" step="0.5"><div class="range-scale"><span>5 Hz</span><span>120 Hz</span></div></div>
 <div class="control"><div class="control-head"><label for="amp">Amplitude</label><output class="value" id="ampOut">1.00 V</output></div><input class="range" id="amp" type="range" min="0.2" max="1" value="0.82" step="0.01"><div class="range-scale"><span>0.2 V</span><span>1.0 V</span></div></div>
 <div class="control"><div class="control-head"><label for="phase">Phase shift</label><output class="value" id="phaseOut">90°</output></div><input class="range" id="phase" type="range" min="0" max="360" value="90" step="1"><div class="range-scale"><span>0°</span><span>360°</span></div></div>
 <div class="control"><div class="control-head"><label for="glow">Trace glow</label><output class="value" id="glowOut">70%</output></div><input class="range" id="glow" type="range" min="0" max="100" value="70" step="1"><div class="range-scale"><span>Soft</span><span>Bright</span></div></div>
 </section>
-<section class="card"><div class="card-title"><strong>Audio art studio</strong><span>03 / 04</span></div>
+<section class="card"><div class="card-title"><strong>Audio art studio</strong><span>03 / 05</span></div>
 <p class="hint" style="margin-top:0">Upload one or two audio files. In XY mode, the left channel draws horizontal movement and the right channel draws vertical movement. Mix two tracks to experiment with new shapes.</p>
 <div class="control"><div class="control-head"><label for="audioA">Sound layer A</label></div><input class="audio-file" id="audioA" type="file" accept="audio/*"><span class="audio-name" id="audioAName">No file selected</span></div>
 <div class="control"><div class="control-head"><label for="audioB">Sound layer B</label></div><input class="audio-file" id="audioB" type="file" accept="audio/*"><span class="audio-name" id="audioBName">No file selected</span></div>
@@ -62,7 +62,15 @@ footer{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap;margin
 <div class="actions"><button class="action" id="audioStopBtn" type="button">■ Stop audio</button><button class="action primary" id="audioPlayBtn" type="button">▶ Play mix</button></div>
 <p class="audio-status" id="audioStatus" role="status" aria-live="polite">Choose an audio file to begin. Stereo audio designed for XY display produces the clearest images.</p>
 </section>
-<section class="card"><div class="card-title"><strong>Display</strong><span>04 / 04</span></div><div class="control"><div class="control-head"><label>Trace phosphor</label><span class="value" id="colorName">Phosphor green</span></div><div class="color-row" id="colors"><button class="swatch active" style="--sw:#aaff78" data-color="#aaff78" data-name="Phosphor green" aria-label="Green trace"></button><button class="swatch" style="--sw:#73f7ff" data-color="#73f7ff" data-name="Ice blue" aria-label="Blue trace"></button><button class="swatch" style="--sw:#ff87dc" data-color="#ff87dc" data-name="Neon pink" aria-label="Pink trace"></button><button class="swatch" style="--sw:#ffc36e" data-color="#ffc36e" data-name="Amber" aria-label="Amber trace"></button></div></div><div class="actions"><button class="action" id="pauseBtn">Ⅱ &nbsp; Pause trace</button><button class="action primary" id="saveBtn">↓ &nbsp; Save screen</button></div><p class="hint">Tip: change phase in Lissajous mode to morph the geometry. Save screen exports the current display as a PNG.</p></section>
+<section class="card"><div class="card-title"><strong>Draw to sound</strong><span>04 / 05</span></div>
+<p class="hint" style="margin-top:0">Draw with your finger or mouse, or import an SVG containing path shapes. The outline becomes stereo audio: horizontal movement is the left channel and vertical movement is the right.</p>
+<canvas id="drawPad" width="640" height="260" aria-label="Draw a shape to convert into oscilloscope audio" style="display:block;width:100%;height:180px;background:#071009;border:1px solid #465848;border-radius:8px;touch-action:none;cursor:crosshair"></canvas>
+<div class="actions" style="margin-top:9px"><button class="action" id="clearDrawingBtn" type="button">Clear drawing</button><button class="action" id="useDrawingBtn" type="button">Use drawing</button></div>
+<div class="control"><div class="control-head"><label for="svgFile">Import SVG path</label></div><input class="audio-file" id="svgFile" type="file" accept=".svg,image/svg+xml"></div>
+<div class="actions"><button class="action primary" id="downloadWavBtn" type="button">↓ Download WAV</button><button class="action" id="drawHelpBtn" type="button">How it works</button></div>
+<p class="audio-status" id="drawStatus" role="status" aria-live="polite">Draw a continuous line, then choose Use drawing or Download WAV. For SVG import, simple path-based artwork works best.</p>
+</section>
+<section class="card"><div class="card-title"><strong>Display</strong><span>05 / 05</span></div><div class="control"><div class="control-head"><label>Trace phosphor</label><span class="value" id="colorName">Phosphor green</span></div><div class="color-row" id="colors"><button class="swatch active" style="--sw:#aaff78" data-color="#aaff78" data-name="Phosphor green" aria-label="Green trace"></button><button class="swatch" style="--sw:#73f7ff" data-color="#73f7ff" data-name="Ice blue" aria-label="Blue trace"></button><button class="swatch" style="--sw:#ff87dc" data-color="#ff87dc" data-name="Neon pink" aria-label="Pink trace"></button><button class="swatch" style="--sw:#ffc36e" data-color="#ffc36e" data-name="Amber" aria-label="Amber trace"></button></div></div><div class="actions"><button class="action" id="pauseBtn">Ⅱ &nbsp; Pause trace</button><button class="action primary" id="saveBtn">↓ &nbsp; Save screen</button></div><p class="hint">Tip: change phase in Lissajous mode to morph the geometry. Save screen exports the current display as a PNG.</p></section>
 </aside>
 </main>
 <footer><span>OSCILLOSCOPES ART · BUILT FOR THE CURIOUS</span><span class="foot-status" id="status">● SIGNAL LOCKED</span><span>WEB SIMULATION · NOT TEST EQUIPMENT</span></footer>
@@ -81,7 +89,7 @@ const canvas=document.getElementById('trace'),ctx=canvas.getContext('2d'),screen
 // Shorthand for looking up a page element by its unique HTML id.
 const $=id=>document.getElementById(id);
 // All interactive values live here. Event handlers update this object; drawing functions read it.
-const state={mode:'lissajous',freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',colorName:'Phosphor green',power:true,paused:false,time:0,last:0,audioContext:null,audioFiles:[null,null],audioGains:[.7,.3],audioBuffer:null,audioSource:null,audioPlaying:false};
+const state={mode:'lissajous',freq:60,amp:.82,phase:90,glow:70,color:'#aaff78',colorName:'Phosphor green',power:true,paused:false,time:0,last:0,audioContext:null,audioFiles:[null,null],audioGains:[.7,.3],audioBuffer:null,audioSource:null,audioPlaying:false,drawingPoints:[],drawPointerDown:false};
 // Audio files are decoded locally in the browser. They are not uploaded to a server.
 let width=0,height=0,dpr=1,raf=0;
 /** Resize the canvas for the current screen size and device pixel ratio to keep the trace crisp. */
@@ -90,6 +98,8 @@ function resize(){const r=screen.getBoundingClientRect();dpr=Math.min(window.dev
 function drawGrid(){ctx.clearRect(0,0,width,height);ctx.fillStyle='#071009';ctx.fillRect(0,0,width,height);ctx.lineWidth=1;ctx.strokeStyle='#4a8b4b28';for(let i=0;i<=10;i++){let x=width*i/10;ctx.beginPath();ctx.moveTo(x,0);ctx.lineTo(x,height);ctx.stroke()}for(let i=0;i<=8;i++){let y=height*i/8;ctx.beginPath();ctx.moveTo(0,y);ctx.lineTo(width,y);ctx.stroke()}ctx.strokeStyle='#72b56d55';ctx.lineWidth=1;ctx.beginPath();ctx.moveTo(width/2,0);ctx.lineTo(width/2,height);ctx.moveTo(0,height/2);ctx.lineTo(width,height/2);ctx.stroke()}
 /** Calculate [x, y] points for the selected waveform without drawing them yet. */
 function points(t){const pts=[],n=state.mode==='sine'||state.mode==='square'||state.mode==='triangle'?900:1100;const cx=width/2,cy=height/2,rx=width*.43*state.amp,ry=height*.39*state.amp,ph=state.phase*Math.PI/180;
+// A hand-drawn or imported path is displayed using the same XY coordinate system.
+if(state.mode==='drawxy'&&state.drawingPoints.length>1){for(const p of state.drawingPoints){pts.push([cx+(p.x-.5)*2*rx,cy+(p.y-.5)*2*ry])}return pts}
 // In Audio XY mode, stereo samples become points: left = X, right = Y.
 if(state.mode==='audioxy'&&state.audioBuffer){const left=state.audioBuffer.getChannelData(0),right=state.audioBuffer.getChannelData(1),count=Math.min(12000,state.audioBuffer.length);for(let i=0;i<count;i++){const index=Math.floor(i*(state.audioBuffer.length-1)/Math.max(1,count-1));pts.push([cx+left[index]*rx,cy-right[index]*ry])}return pts}
 for(let i=0;i<=n;i++){const u=i/n;let x,y;switch(state.mode){case'lissajous':x=cx+rx*Math.sin(2*Math.PI*(2*u)+t*.38);y=cy+ry*Math.sin(2*Math.PI*(3*u)+ph+t*.38);break;case'circle':x=cx+rx*Math.cos(2*Math.PI*u+t*.32);y=cy+ry*Math.sin(2*Math.PI*u+t*.32);break;case'spiral':{const a=2*Math.PI*(3*u)+t*.28,r=.04+.96*u;x=cx+rx*r*Math.cos(a);y=cy+ry*r*Math.sin(a);break}case'sine':{x=width*u;y=cy-ry*Math.sin(2*Math.PI*(state.freq/30)*u+t*.65+ph)*.85;break}case'square':{x=width*u;const s=Math.sin(2*Math.PI*(state.freq/30)*u+t*.65+ph);y=cy-ry*(s>=0?1:-1)*.8;break}case'triangle':{x=width*u;const z=((state.freq/30)*u+t*.1+ph/(2*Math.PI))%1;y=cy-ry*(1-4*Math.abs(z-.5))*.85;break}}pts.push([x,y])}return pts}
@@ -118,6 +128,80 @@ $('mixA').addEventListener('input',e=>updateMixSlider(0,e.target.value));$('mixB
 $('mixA').addEventListener('change',commitMixChange);$('mixB').addEventListener('change',commitMixChange);
 async function playAudioMix(){if(!state.audioBuffer){$('audioStatus').textContent='Load at least one audio file before playing.';return}try{const context=await ensureAudioContext();stopAudio();const source=context.createBufferSource();source.buffer=state.audioBuffer;source.connect(context.destination);source.onended=()=>{if(state.audioSource===source){state.audioSource=null;state.audioPlaying=false;$('audioPlayBtn').textContent='▶ Play mix'}};state.audioSource=source;state.audioPlaying=true;source.start();$('audioPlayBtn').textContent='▶ Restart mix';$('audioStatus').textContent='Playing locally · the XY trace is drawn from the mixed stereo samples.'}catch(error){console.error('Audio playback failed:',error);$('audioStatus').textContent='Playback was blocked by the browser. Tap Play mix again to allow audio.'}}
 $('audioPlayBtn').addEventListener('click',playAudioMix);$('audioStopBtn').addEventListener('click',()=>{stopAudio();$('audioStatus').textContent='Audio stopped. Your loaded tracks are still ready to mix.'});
+
+// DRAW-TO-SOUND STUDIO
+// The pad stores points in normalized 0..1 coordinates so it works on any screen size.
+const drawPad=$('drawPad'),drawCtx=drawPad.getContext('2d');
+function paintDrawingPad(){
+  drawCtx.clearRect(0,0,drawPad.width,drawPad.height);
+  drawCtx.fillStyle='#071009';drawCtx.fillRect(0,0,drawPad.width,drawPad.height);
+  drawCtx.strokeStyle='#4a8b4b35';drawCtx.lineWidth=1;
+  for(let i=1;i<8;i++){const x=drawPad.width*i/8;drawCtx.beginPath();drawCtx.moveTo(x,0);drawCtx.lineTo(x,drawPad.height);drawCtx.stroke()}
+  for(let i=1;i<4;i++){const y=drawPad.height*i/4;drawCtx.beginPath();drawCtx.moveTo(0,y);drawCtx.lineTo(drawPad.width,y);drawCtx.stroke()}
+  if(state.drawingPoints.length){drawCtx.beginPath();state.drawingPoints.forEach((p,i)=>{const x=p.x*drawPad.width,y=p.y*drawPad.height;if(i===0)drawCtx.moveTo(x,y);else drawCtx.lineTo(x,y)});drawCtx.strokeStyle='#aaff78';drawCtx.lineWidth=3;drawCtx.lineJoin='round';drawCtx.lineCap='round';drawCtx.shadowColor='#aaff78';drawCtx.shadowBlur=8;drawCtx.stroke();drawCtx.shadowBlur=0}
+}
+function padPoint(event){const r=drawPad.getBoundingClientRect();return{x:Math.max(0,Math.min(1,(event.clientX-r.left)/r.width)),y:Math.max(0,Math.min(1,(event.clientY-r.top)/r.height))}}
+drawPad.addEventListener('pointerdown',event=>{state.drawPointerDown=true;drawPad.setPointerCapture(event.pointerId);state.drawingPoints.push(padPoint(event));paintDrawingPad()});
+drawPad.addEventListener('pointermove',event=>{if(!state.drawPointerDown)return;state.drawingPoints.push(padPoint(event));if(state.drawingPoints.length>2400)state.drawingPoints=state.drawingPoints.filter((_,i)=>i%2===0);paintDrawingPad()});
+function finishPadStroke(){state.drawPointerDown=false}
+drawPad.addEventListener('pointerup',finishPadStroke);drawPad.addEventListener('pointercancel',finishPadStroke);
+$('clearDrawingBtn').addEventListener('click',()=>{state.drawingPoints=[];paintDrawingPad();$('drawStatus').textContent='Drawing cleared. Start a new line whenever you are ready.'});
+function normalizePathPoints(raw){
+  if(raw.length<2)return [];
+  let minX=Infinity,minY=Infinity,maxX=-Infinity,maxY=-Infinity;
+  for(const p of raw){minX=Math.min(minX,p.x);minY=Math.min(minY,p.y);maxX=Math.max(maxX,p.x);maxY=Math.max(maxY,p.y)}
+  const spanX=Math.max(1e-6,maxX-minX),spanY=Math.max(1e-6,maxY-minY),scale=Math.min(.9/spanX,.9/spanY);
+  const centerX=(minX+maxX)/2,centerY=(minY+maxY)/2;
+  return raw.map(p=>({x:.5+(p.x-centerX)*scale,y:.5+(p.y-centerY)*scale}));
+}
+$('svgFile').addEventListener('change',async event=>{
+  const file=event.target.files&&event.target.files[0];if(!file)return;
+  if(file.size>2_000_000){$('drawStatus').textContent='That SVG is over 2 MB. Please choose a smaller file.';return}
+  try{
+    // Parse SVG as data only; never insert the uploaded markup into the live page.
+    const parsed=new DOMParser().parseFromString(await file.text(),'image/svg+xml');
+    if(parsed.querySelector('parsererror'))throw new Error('Invalid SVG markup');
+    const paths=[...parsed.querySelectorAll('path')].slice(0,80),raw=[];
+    for(const path of paths){
+      if(typeof path.getTotalLength!=='function'||typeof path.getPointAtLength!=='function')continue;
+      const length=path.getTotalLength();if(!Number.isFinite(length)||length<=0)continue;
+      const steps=Math.max(2,Math.min(300,Math.ceil(length/3)));
+      for(let i=0;i<=steps;i++){const p=path.getPointAtLength(length*i/steps);raw.push({x:p.x,y:p.y})}
+    }
+    if(raw.length<2)throw new Error('No usable SVG paths found');
+    state.drawingPoints=normalizePathPoints(raw).slice(0,2400);paintDrawingPad();
+    $('drawStatus').textContent='Imported '+file.name+' · '+state.drawingPoints.length+' sampled points. Choose Use drawing or Download WAV.';
+  }catch(error){console.error('Could not import SVG:',error);$('drawStatus').textContent='Could not read that SVG. Try a simple SVG containing one or more path elements.'}
+});
+function drawingAudioSamples(){
+  // Repeat each point briefly so the output audio holds the beam near that coordinate.
+  const points=state.drawingPoints;if(points.length<2)throw new Error('Draw or import a shape first.');
+  const samplesPerPoint=32,total=points.length*samplesPerPoint,left=new Float32Array(total),right=new Float32Array(total);
+  for(let i=0;i<points.length;i++){const p=points[i];const next=points[Math.min(i+1,points.length-1)];
+    for(let j=0;j<samplesPerPoint;j++){const t=j/samplesPerPoint,index=i*samplesPerPoint+j;left[index]=(p.x+(next.x-p.x)*t-.5)*1.8;right[index]=(.5-(p.y+(next.y-p.y)*t))*1.8}
+  }
+  return {left,right,sampleRate:44100};
+}
+function makeWavBlob(audio){
+  // Write a standard 16-bit PCM stereo WAV header followed by alternating left/right samples.
+  const frames=audio.left.length,buffer=new ArrayBuffer(44+frames*4),view=new DataView(buffer);
+  function writeText(offset,text){for(let i=0;i<text.length;i++)view.setUint8(offset+i,text.charCodeAt(i))}
+  writeText(0,'RIFF');view.setUint32(4,36+frames*4,true);writeText(8,'WAVE');writeText(12,'fmt ');view.setUint32(16,16,true);view.setUint16(20,1,true);view.setUint16(22,2,true);view.setUint32(24,audio.sampleRate,true);view.setUint32(28,audio.sampleRate*4,true);view.setUint16(32,4,true);view.setUint16(34,16,true);writeText(36,'data');view.setUint32(40,frames*4,true);
+  for(let i=0,offset=44;i<frames;i++,offset+=4){const l=Math.max(-1,Math.min(1,audio.left[i])),r=Math.max(-1,Math.min(1,audio.right[i]));view.setInt16(offset,l<0?l*32768:l*32767,true);view.setInt16(offset+2,r<0?r*32768:r*32767,true)}
+  return new Blob([buffer],{type:'audio/wav'});
+}
+function useDrawing(){
+  const audio=drawingAudioSamples();state.audioBuffer=state.audioContext?state.audioContext.createBuffer(2,audio.left.length,audio.sampleRate):null;
+  if(state.audioBuffer){state.audioBuffer.copyToChannel(audio.left,0);state.audioBuffer.copyToChannel(audio.right,1)}
+  state.mode='drawxy';document.querySelectorAll('.mode').forEach(b=>b.classList.toggle('active',b.dataset.mode==='audioxy'));
+  $('status').textContent='● DRAWN XY MODE';$('drawStatus').textContent='Drawing is now on the oscilloscope. Download WAV to save the stereo signal, or press Play mix to hear it.';
+  // Build the same stereo signal for browser playback even if AudioContext has not yet been created.
+  ensureAudioContext().then(context=>{const ready=context.createBuffer(2,audio.left.length,audio.sampleRate);ready.copyToChannel(audio.left,0);ready.copyToChannel(audio.right,1);state.audioBuffer=ready;});
+}
+$('useDrawingBtn').addEventListener('click',()=>{try{useDrawing()}catch(error){$('drawStatus').textContent=error.message}});
+$('downloadWavBtn').addEventListener('click',()=>{try{const blob=makeWavBlob(drawingAudioSamples()),url=URL.createObjectURL(blob),link=document.createElement('a');link.href=url;link.download='oscilloscopes-art-drawing.wav';link.click();setTimeout(()=>URL.revokeObjectURL(url),1000);$('drawStatus').textContent='WAV exported · stereo XY coordinates are encoded in the left and right audio channels.'}catch(error){$('drawStatus').textContent=error.message}});
+$('drawHelpBtn').addEventListener('click',()=>{$('drawStatus').textContent='Each point becomes a stereo sample pair. An oscilloscope in XY mode uses the left channel for X and the right channel for Y, so the sound carries the drawing path.'});
+paintDrawingPad();
 
 // Power, pause, and save controls change the instrument's visible behavior.
 $('powerBtn').addEventListener('click',()=>{state.power=!state.power;$('powerBtn').classList.toggle('off',!state.power);$('powerBtn').textContent=state.power?'POWER ON':'POWER OFF';$('powerBtn').setAttribute('aria-pressed',String(state.power));$('screenOff').classList.toggle('show',!state.power);$('liveLabel').textContent=state.power?'SIGNAL RUNNING':'STANDBY';$('liveDot').style.background=state.power?'var(--mint)':'#566257';$('status').textContent=state.power?'● SIGNAL LOCKED':'○ OUTPUT MUTED';if(!state.power){ctx.clearRect(0,0,width,height)}});
