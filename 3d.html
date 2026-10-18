@@ -23,6 +23,10 @@
 .btn,.sem-sample-btn{font-size:12px;line-height:1.35}
 @media(max-width:520px){.power-overlay{top:54px;right:9px;min-width:0;width:calc(100% - 18px);max-width:220px}.power-caption{top:auto;bottom:54px;right:9px;max-width:220px}.badge{max-width:calc(100% - 20px);left:10px;top:10px}.stage-hint{max-width:calc(100% - 20px);left:10px;bottom:10px}}
 
+/* Clear, accessible two-state power switch for the simulated Jacob’s ladder. */
+.power-overlay{font-size:14px;font-weight:800;letter-spacing:.025em;text-align:center;border:1px solid #ffd18b99;background:linear-gradient(145deg,#44351ff0,#1e1b2df2);color:#fff1d2;box-shadow:inset 0 1px #ffffff45,0 0 0 1px #ffd18b20,0 8px 24px #0008;}
+.power-overlay[aria-pressed="true"]{border-color:#c6a5ff;background:linear-gradient(145deg,#6039a7f5,#2a2049f5);color:#fff;box-shadow:inset 0 1px #ffffff55,0 0 0 1px #b68aff65,0 0 22px #a36aff55,0 8px 24px #0008;}
+.power-overlay:focus-visible{outline:3px solid #f5eaff;outline-offset:3px}
 /* iOS-inspired translucent glass polish */
 body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),radial-gradient(ellipse at 92% 18%,#285d72 0%,transparent 36%),linear-gradient(145deg,#17162b,#111321 72%);font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",sans-serif;letter-spacing:.005em}
 .eyebrow,.val,.status,.back{color:#d8d4ff}
@@ -51,7 +55,7 @@ body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),ra
 </head>
 <body><div class="app">
 <header class="head"><div><div class="eyebrow">WONKA15 · INTERACTIVE OBJECT LAB</div><h1>OSCILLOSCOPES ART / 3D BENCH</h1></div><div class="tag">REAL-TIME MESH · AR EXPORT</div></header>
-<div class="layout"><section class="stage" id="stage"><div class="badge">V-03 OSCILLOSCOPE + JEOL JSM-5200 SEM · 3D LAB</div><div class="stage-hint">DRAG TO ORBIT · SCROLL TO ZOOM · DRAG A KNOB TO TURN IT</div><button class="btn primary power-overlay" id="powerToggle" type="button" aria-pressed="false">⚡ Jacob’s ladder: OFF</button><div class="power-caption" id="powerCaption">SIMULATED POWER CIRCUIT · OFF</div></section>
+<div class="layout"><section class="stage" id="stage"><div class="badge">V-03 OSCILLOSCOPE + JEOL JSM-5200 SEM · 3D LAB</div><div class="stage-hint">DRAG TO ORBIT · SCROLL TO ZOOM · DRAG A KNOB TO TURN IT</div><button class="btn primary power-overlay" id="powerToggle" type="button" aria-pressed="false" aria-label="Turn Jacob’s ladder simulation on">⚡ JACOB’S LADDER · OFF</button><div class="power-caption" id="powerCaption">SIMULATED POWER CIRCUIT · OFF</div></section>
 <aside class="panel">
 <section class="card"><div class="title"><b>Signal controls</b><span>01</span></div>
 <div class="control"><div class="row"><label for="freq">Frequency</label><output class="val" id="freqVal">60 Hz</output></div><input class="range" id="freq" type="range" min="5" max="120" value="60" step=".5"></div>
@@ -124,6 +128,7 @@ body{background:radial-gradient(ellipse at 18% 0%,#494b7c 0%,transparent 42%),ra
 <script type="module">
 import * as THREE from 'three';
 import {OrbitControls} from 'three/addons/controls/OrbitControls.js';
+import {RoundedBoxGeometry} from 'three/addons/geometries/RoundedBoxGeometry.js';
 import {GLTFExporter} from 'three/addons/exporters/GLTFExporter.js';
 import {USDZExporter} from 'three/addons/exporters/USDZExporter.js';
 const $=id=>document.getElementById(id), stage=$('stage');
@@ -138,16 +143,35 @@ const rim=new THREE.PointLight(0x86ff9b,18,9);rim.position.set(-3,3,2);scene.add
 const mat=(color,rough=.5,metal=0)=>new THREE.MeshStandardMaterial({color,roughness:rough,metalness:metal});
 const dark=mat('#18211b',.35,.62), edge=mat('#526052',.32,.7), rubber=mat('#101411',.8), ivory=mat('#c9d0bc',.45,.25), wood=mat('#66472f',.65), wood2=mat('#3a2a20',.72), green= new THREE.MeshStandardMaterial({color:state.color,emissive:state.color,emissiveIntensity:1.7,roughness:.25});
 const root=new THREE.Group();scene.add(root);
-function box(parent,name,pos,size,material,bevel=0){const g=new THREE.BoxGeometry(...size);const m=new THREE.Mesh(g,material);m.name=name;m.position.set(...pos);parent.add(m);return m}
+function box(parent,name,pos,size,material,bevel=0){
+ // Use a real rounded-box mesh only when a bevel is requested. This softens major
+ // instrument edges without adding unnecessary geometry to every tiny detail.
+ const radius=bevel>0?Math.min(bevel,Math.min(...size)*.45):0;
+ const g=radius>0?new RoundedBoxGeometry(size[0],size[1],size[2],3,radius):new THREE.BoxGeometry(...size);
+ const m=new THREE.Mesh(g,material);m.name=name;m.position.set(...pos);parent.add(m);return m
+}
 function cylinder(parent,name,pos,radius,depth,material,segments=40){const m=new THREE.Mesh(new THREE.CylinderGeometry(radius,radius,depth,segments),material);m.name=name;m.rotation.x=Math.PI/2;m.position.set(...pos);parent.add(m);return m}
-function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){\n // High-resolution labels remain crisp when the camera is zoomed in.\n const c=document.createElement('canvas');c.width=2048;c.height=256;const x=c.getContext('2d');\n x.clearRect(0,0,c.width,c.height);x.font='700 132px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';\n x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.strokeStyle='rgba(5,8,14,.96)';x.lineWidth=13;x.strokeText(text,c.width/2,c.height/2,c.width-72);\n x.fillStyle=color;x.shadowColor='#000';x.shadowBlur=5;x.fillText(text,c.width/2,c.height/2,c.width-72);\n const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();\n const width=Math.max(size*2.5,text.length*size*.72);\n const m=new THREE.Mesh(new THREE.PlaneGeometry(width,size),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false,toneMapped:false}));\n m.name='Readable label: '+text;m.position.set(...pos);parent.add(m);return m\n}
+function textLabel(parent,text,pos,size=.12,color='#c6d4c0'){
+ // Keep canvas typography and world-space dimensions proportional so text is not
+ // stretched thin. A minimum physical height makes small panel legends readable.
+ const labelHeight=Math.max(size*1.4,.09);
+ const c=document.createElement('canvas');c.width=2048;c.height=256;const x=c.getContext('2d');
+ x.clearRect(0,0,c.width,c.height);x.font='800 164px -apple-system,BlinkMacSystemFont,Segoe UI,sans-serif';
+ x.textAlign='center';x.textBaseline='middle';x.lineJoin='round';x.strokeStyle='rgba(4,6,14,.98)';x.lineWidth=17;
+ x.strokeText(text,c.width/2,c.height/2,c.width-84);
+ x.fillStyle=color;x.shadowColor='#000';x.shadowBlur=7;x.fillText(text,c.width/2,c.height/2,c.width-84);
+ const tex=new THREE.CanvasTexture(c);tex.colorSpace=THREE.SRGBColorSpace;tex.anisotropy=renderer.capabilities.getMaxAnisotropy();
+ const width=Math.max(labelHeight*2.8,text.length*labelHeight*.52);
+ const m=new THREE.Mesh(new THREE.PlaneGeometry(width,labelHeight),new THREE.MeshBasicMaterial({map:tex,transparent:true,side:THREE.DoubleSide,depthWrite:false,toneMapped:false}));
+ m.name='Readable label: '+text;m.position.set(...pos);parent.add(m);return m
+}
 // Workbench and metal legs
-box(root,'Workbench top',[0,-.23,0],[8.8,.22,5.1],wood);
+box(root,'Workbench top',[0,-.23,0],[8.8,.22,5.1],wood,.035);
 box(root,'Workbench front edge',[0,-.35,2.48],[8.8,.08,.12],wood2);
 for(const x of [-3.7,3.7])for(const z of [-1.9,1.9]){const leg=box(root,'Workbench leg',[x,-1.08,z],[.18,1.45,.18],dark);leg.rotation.z=x<0?-.015:.015}
 for(let i=0;i<16;i++){const line=box(root,'Wood grain',[-3.8+i*.5,-.113,0],[.012,.004,4.7],wood2);line.material=wood2}
 // A separate adjacent workbench for the microscope, with its own top, apron, legs, and grain.
-box(root,'Microscope bench top',[7.35,-.23,0],[5.75,.22,5.1],wood);
+box(root,'Microscope bench top',[7.35,-.23,0],[5.75,.22,5.1],wood,.035);
 box(root,'Microscope bench front edge',[7.35,-.35,2.48],[5.75,.08,.12],wood2);
 for(const x of [5.0,9.7])for(const z of [-1.9,1.9])box(root,'Microscope bench leg',[x,-1.08,z],[.18,1.45,.18],dark);
 for(let i=0;i<11;i++)box(root,'Microscope bench wood grain',[4.8+i*.5,-.113,0],[.012,.004,4.7],wood2);
@@ -156,11 +180,11 @@ for(let i=0;i<11;i++)box(root,'Microscope bench wood grain',[4.8+i*.5,-.113,0],[
  // This is a visual reconstruction, not an engineering-accurate CAD model.
  const sem=new THREE.Group();sem.name='JEOL JSM-5200 Scanning Electron Microscope';sem.position.set(7.35,-.115,-.42);root.add(sem);
  const semCream=mat('#c8c9b9',.42,.3),semLight=mat('#d9dacc',.38,.28),semShadow=mat('#747b73',.38,.58),semBlack=mat('#171c19',.5,.3),semSteel=mat('#aeb6b0',.28,.68),semBlue=mat('#243b45',.28,.45),semAmber=mat('#d5a34a',.35,.32);
- box(sem,'JSM-5200 lower plinth',[0,.16,0],[1.75,.30,1.48],semShadow);
- box(sem,'JSM-5200 base cabinet',[0,.53,0],[1.55,.52,1.30],semCream);
+ box(sem,'JSM-5200 lower plinth',[0,.16,0],[1.75,.30,1.48],semShadow,.045);
+ box(sem,'JSM-5200 base cabinet',[0,.53,0],[1.55,.52,1.30],semCream,.055);
  box(sem,'Front lower access panel',[0,.50,.665],[1.22,.34,.035],semLight);
  box(sem,'Lower panel seam',[0,.31,.69],[1.25,.018,.018],semShadow);
- box(sem,'Electron column enclosure',[0,1.30,-.19],[.92,1.22,.98],semLight);
+ box(sem,'Electron column enclosure',[0,1.30,-.19],[.92,1.22,.98],semLight,.045);
  box(sem,'Column top cap',[0,1.94,-.19],[1.02,.16,1.08],semCream);
  box(sem,'Top gun cover',[0,2.10,-.19],[.66,.22,.72],semCream);
  box(sem,'Column side service panel',[.474,1.35,-.22],[.025,.78,.68],semShadow);
@@ -212,9 +236,9 @@ for(let i=0;i<11;i++)box(root,'Microscope bench wood grain',[4.8+i*.5,-.113,0],[
  const leaf=new THREE.Mesh(new THREE.SphereGeometry(.065,20,12),mat('#477c3d',.55));leaf.name='Apple leaf';leaf.scale.set(1.7,.18,.7);leaf.position.set(.075,1.08,.91);leaf.rotation.z=.35;sem.add(leaf);
 // instrument case
 const instrument=new THREE.Group();instrument.position.set(0,.98,.05);root.add(instrument);
-box(instrument,'Steel instrument chassis',[0,0,0],[4.45,2.55,.82],dark);
-box(instrument,'Front faceplate',[0,0,.43],[4.32,2.42,.09],edge);
-box(instrument,'Screen bezel',[-.68,.22,.495],[2.7,1.82,.09],rubber);
+box(instrument,'Steel instrument chassis',[0,0,0],[4.45,2.55,.82],dark,.075);
+box(instrument,'Front faceplate',[0,0,.43],[4.32,2.42,.09],edge,.025);
+box(instrument,'Screen bezel',[-.68,.22,.495],[2.7,1.82,.09],rubber,.025);
 box(instrument,'Screen glass',[-.68,.22,.548],[2.52,1.64,.025],mat('#07140c',.2,.12));
 box(instrument,'Brand plate',[1.48,.91,.49],[1.15,.18,.045],dark);
 textLabel(instrument,'V-03 VECTOR',[.96,.89,.526],.075,'#baff7b');
@@ -245,7 +269,7 @@ function cable(points,color){const curve=new THREE.CatmullRomCurve3(points.map(p
 
 // Raised instrument shelf and fully simulated power-distribution demo.
 const shelfWood=mat('#493d54',.42,.35),shelfEdge=mat('#857ca4',.3,.62),powerDark=mat('#171a2b',.32,.45),powerFace=mat('#343b58',.3,.42),powerMetal=mat('#c5d6e7',.24,.78),powerBlue=mat('#85caff',.22,.2),powerAmber=mat('#ffd18b',.25,.15);
-box(root,'Raised electronics shelf',[3.55,3.02,-1.82],[11.65,.16,1.28],shelfWood);
+box(root,'Raised electronics shelf',[3.55,3.02,-1.82],[11.65,.16,1.28],shelfWood,.035);
 box(root,'Shelf front metal trim',[3.55,2.94,-1.16],[11.65,.08,.055],shelfEdge);
 for(const x of [-1.72,8.82]){
  // Full-height end supports run from the shelf down to the workbench, with reinforced feet.
@@ -309,7 +333,15 @@ const arcLine=new THREE.Line(arcGeo,arcMat);arcLine.name='Horizontal purple simu
 const glowGeo=new THREE.BufferGeometry();glowGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array((ARC_SEGMENTS+1)*3),3));const glowLine=new THREE.Line(glowGeo,arcGlowMat);glowLine.frustumCulled=false;glowLine.visible=false;ladder.add(glowLine);
 const arcLight=new THREE.PointLight(0xb76aff,0,4.8);arcLight.position.set(ladderX,3.58,-1.25);scene.add(arcLight);
 let ladderPowered=false;
-function setLadderPower(on){ladderPowered=!!on;arcLine.visible=ladderPowered;glowLine.visible=ladderPowered;arcLight.intensity=ladderPowered?3.5:0;switchCap.material=ladderPowered?powerBlue:powerAmber;switchCap.position.y=ladderPowered?3.39:3.35;switchCap.userData.pressZ=switchCap.position.z;$('powerToggle').textContent=ladderPowered?'⚡ Jacob’s ladder: ON':'⚡ Jacob’s ladder: OFF';$('powerToggle').setAttribute('aria-pressed',String(ladderPowered));$('powerCaption').textContent=ladderPowered?'SIMULATED PURPLE ARC ACTIVE · NO REAL VOLTAGE':'SIMULATED POWER CIRCUIT · OFF';}
+function setLadderPower(on){
+ ladderPowered=!!on;arcLine.visible=ladderPowered;glowLine.visible=ladderPowered;
+ arcLight.intensity=ladderPowered?3.5:0;switchCap.material=ladderPowered?powerBlue:powerAmber;
+ switchCap.position.y=ladderPowered?3.39:3.35;switchCap.userData.pressZ=switchCap.position.z;
+ $('powerToggle').textContent=ladderPowered?'⚡ JACOB’S LADDER · ON':'⚡ JACOB’S LADDER · OFF';
+ $('powerToggle').setAttribute('aria-pressed',String(ladderPowered));
+ $('powerToggle').setAttribute('aria-label',ladderPowered?'Turn Jacob’s ladder simulation off':'Turn Jacob’s ladder simulation on');
+ $('powerCaption').textContent=ladderPowered?'● SIMULATION ON · PURPLE ARC ACTIVE · NO REAL VOLTAGE':'○ SIMULATION OFF · NO REAL VOLTAGE';
+}
 $('powerToggle').addEventListener('click',()=>setLadderPower(!ladderPowered));
 // A horizontal purple arc spans the diverging electrodes and travels upward like a classic Jacob's ladder.
 function updateLadder(t){
