@@ -33,7 +33,7 @@ try {
     for (const tag of tags) {
       const attributes = tag[1];
       const source = tag[2];
-      if (/\bsrc\s*=/i.test(attributes) || !source.trim()) continue;
+      if (/\bsrc\s*=/i.test(attributes) || !source.trim() || /\btype\s*=\s*["'](?:importmap|application\/json)["']/i.test(attributes)) continue;
 
       scriptNumber += 1;
       const isModule = /\btype\s*=\s*["']module["']/i.test(attributes);
