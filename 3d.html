@@ -336,7 +336,7 @@ const driver=box(root,'Screwdriver handle',[2.8,-.04,-1.55],[.18,.18,.68],mat('#
 const shaft=box(root,'Screwdriver shaft',[2.55,-.06,-1.2],[.045,.045,.45],edge);shaft.rotation.y=.32;
 // Add mesh waveform line
 let audioAnalyser=null,audioData=null,audioCtx=null,audioElement=null,audioSource=null,audioObjectUrl=null;
-async async function connectAudioElement(el){
+async function connectAudioElement(el){
   try{
     if(audioCtx){try{await audioCtx.close()}catch{}}
     audioCtx=new (window.AudioContext||window.webkitAudioContext)();
